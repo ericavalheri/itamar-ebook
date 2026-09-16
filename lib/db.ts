@@ -25,20 +25,22 @@ function createConnection() {
       email TEXT NOT NULL,
       telefone TEXT NOT NULL,
       estado TEXT NOT NULL,
+      cpf TEXT NOT NULL,
       valor_centavos INTEGER NOT NULL,
       status TEXT NOT NULL DEFAULT 'aguardando_pagamento',
-      comprovante_texto TEXT,
-      comprovante_arquivo_nome TEXT,
-      comprovante_arquivo_tipo TEXT,
-      comprovante_arquivo_base64 TEXT,
+      asaas_customer_id TEXT,
+      asaas_payment_id TEXT,
+      pix_qr_base64 TEXT,
+      pix_copia_cola TEXT,
+      pix_expiracao TEXT,
       access_token TEXT UNIQUE,
       admin_nota TEXT,
       created_at TEXT NOT NULL,
-      comprovante_enviado_at TEXT,
-      decidido_at TEXT
+      pago_at TEXT
     );
     CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
     CREATE INDEX IF NOT EXISTS idx_orders_access_token ON orders(access_token);
+    CREATE INDEX IF NOT EXISTS idx_orders_asaas_payment_id ON orders(asaas_payment_id);
   `);
   return db;
 }
@@ -51,9 +53,9 @@ if (process.env.NODE_ENV !== "production") {
 
 export type OrderStatus =
   | "aguardando_pagamento"
-  | "aguardando_aprovacao"
   | "aprovado"
-  | "rejeitado"
+  | "expirado"
+  | "cancelado"
   | "bloqueado";
 
 export interface Order {
@@ -63,15 +65,16 @@ export interface Order {
   email: string;
   telefone: string;
   estado: string;
+  cpf: string;
   valor_centavos: number;
   status: OrderStatus;
-  comprovante_texto: string | null;
-  comprovante_arquivo_nome: string | null;
-  comprovante_arquivo_tipo: string | null;
-  comprovante_arquivo_base64: string | null;
+  asaas_customer_id: string | null;
+  asaas_payment_id: string | null;
+  pix_qr_base64: string | null;
+  pix_copia_cola: string | null;
+  pix_expiracao: string | null;
   access_token: string | null;
   admin_nota: string | null;
   created_at: string;
-  comprovante_enviado_at: string | null;
-  decidido_at: string | null;
+  pago_at: string | null;
 }

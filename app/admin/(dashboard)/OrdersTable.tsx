@@ -9,7 +9,7 @@ function useOrderAction() {
   const router = useRouter();
   const [pendingId, setPendingId] = useState<string | null>(null);
 
-  async function run(id: string, action: "approve" | "reject" | "block" | "reactivate", nota?: string) {
+  async function run(id: string, action: "grant-access" | "cancel" | "block", nota?: string) {
     setPendingId(id);
     try {
       const res = await fetch(`/api/admin/orders/${id}/${action}`, {
@@ -29,40 +29,6 @@ function useOrderAction() {
   }
 
   return { run, pendingId };
-}
-
-function ComprovanteCell({ order }: { order: Order }) {
-  const [open, setOpen] = useState(false);
-  if (!order.comprovante_texto && !order.comprovante_arquivo_base64) {
-    return <span style={{ color: "var(--muted)" }}>—</span>;
-  }
-  return (
-    <div>
-      <button
-        type="button"
-        className="btn btn-secondary"
-        style={{ padding: "6px 12px", fontSize: "0.8rem" }}
-        onClick={() => setOpen((v) => !v)}
-      >
-        {open ? "Ocultar" : "Ver comprovante"}
-      </button>
-      {open && (
-        <div style={{ marginTop: 8, fontSize: "0.85rem", maxWidth: 260 }}>
-          {order.comprovante_texto && <p style={{ margin: "4px 0" }}>{order.comprovante_texto}</p>}
-          {order.comprovante_arquivo_base64 && (
-            <a
-              href={`data:${order.comprovante_arquivo_tipo};base64,${order.comprovante_arquivo_base64}`}
-              download={order.comprovante_arquivo_nome || "comprovante"}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Baixar {order.comprovante_arquivo_nome || "arquivo"}
-            </a>
-          )}
-        </div>
-      )}
-    </div>
-  );
 }
 
 function AccessLinkCell({ order }: { order: Order }) {
@@ -106,7 +72,6 @@ export default function OrdersTable({ orders }: { orders: Order[] }) {
             <th>UF</th>
             <th>Valor</th>
             <th>Status</th>
-            <th>Comprovante</th>
             <th>Acesso</th>
             <th>Ações</th>
           </tr>
@@ -133,29 +98,38 @@ export default function OrdersTable({ orders }: { orders: Order[] }) {
                     {STATUS_LABEL[order.status]}
                   </span>
                 </td>
-                <td><ComprovanteCell order={order} /></td>
                 <td><AccessLinkCell order={order} /></td>
                 <td>
                   <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                    {order.status === "aguardando_aprovacao" && (
+                    {order.status === "aguardando_pagamento" && (
                       <>
                         <button
                           className="btn btn-success"
                           style={{ padding: "6px 12px", fontSize: "0.8rem" }}
                           disabled={busy}
-                          onClick={() => run(order.id, "approve")}
+                          onClick={() => run(order.id, "grant-access")}
                         >
-                          Aprovar
+                          Liberar manualmente
                         </button>
                         <button
                           className="btn btn-danger"
                           style={{ padding: "6px 12px", fontSize: "0.8rem" }}
                           disabled={busy}
-                          onClick={() => run(order.id, "reject", prompt("Motivo (opcional):") || undefined)}
+                          onClick={() => run(order.id, "cancel")}
                         >
-                          Rejeitar
+                          Cancelar pedido
                         </button>
                       </>
+                    )}
+                    {(order.status === "expirado" || order.status === "cancelado" || order.status === "bloqueado") && (
+                      <button
+                        className="btn btn-success"
+                        style={{ padding: "6px 12px", fontSize: "0.8rem" }}
+                        disabled={busy}
+                        onClick={() => run(order.id, "grant-access")}
+                      >
+                        {order.status === "bloqueado" ? "Reativar acesso" : "Liberar manualmente"}
+                      </button>
                     )}
                     {order.status === "aprovado" && (
                       <button
@@ -165,16 +139,6 @@ export default function OrdersTable({ orders }: { orders: Order[] }) {
                         onClick={() => run(order.id, "block", prompt("Motivo do bloqueio (opcional):") || undefined)}
                       >
                         Bloquear acesso
-                      </button>
-                    )}
-                    {(order.status === "bloqueado" || order.status === "rejeitado") && (
-                      <button
-                        className="btn btn-success"
-                        style={{ padding: "6px 12px", fontSize: "0.8rem" }}
-                        disabled={busy}
-                        onClick={() => run(order.id, "reactivate")}
-                      >
-                        Reativar acesso
                       </button>
                     )}
                   </div>

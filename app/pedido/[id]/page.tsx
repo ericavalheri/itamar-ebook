@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getOrderById, PIX_KEY, PIX_OWNER_NAME, STATUS_LABEL, formatMoney } from "@/lib/orders";
-import ComprovanteForm from "./ComprovanteForm";
+import { getOrderById, STATUS_LABEL, formatMoney } from "@/lib/orders";
+import CopyPixCode from "./CopyPixCode";
+import PixStatusWatcher from "./PixStatusWatcher";
 
 export const dynamic = "force-dynamic";
 
@@ -16,37 +17,34 @@ export default async function PedidoPage({
 
   return (
     <main className="container" style={{ padding: "48px 20px 80px" }}>
+      <PixStatusWatcher orderId={order.id} status={order.status} />
       <span className="label">Seu pedido</span>
       <h1 style={{ margin: "12px 0 6px" }}>Adicional de Periculosidade</h1>
       <p style={{ color: "var(--muted)", marginBottom: 20 }}>
         Pedido de {order.nome} · <span className={`status-pill status-${order.status}`}>{STATUS_LABEL[order.status]}</span>
       </p>
 
-      {(order.status === "aguardando_pagamento" || order.status === "aguardando_aprovacao") && (
-        <div className="card" style={{ padding: 24, marginBottom: 20 }}>
+      {order.status === "aguardando_pagamento" && (
+        <div className="card" style={{ padding: 24, marginBottom: 20, maxWidth: 420 }}>
           <h2 style={{ marginTop: 0, fontSize: "1.2rem" }}>Pague via Pix</h2>
           <p style={{ color: "var(--muted)" }}>
             Valor: <strong style={{ color: "var(--ink)" }}>{formatMoney(order.valor_centavos)}</strong>
           </p>
-          <div style={{ background: "var(--sand)", borderRadius: 8, padding: "14px 16px", margin: "12px 0" }}>
-            <div style={{ fontSize: "0.78rem", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-              Chave Pix (CPF)
-            </div>
-            <div style={{ fontSize: "1.15rem", fontWeight: 800 }}>{PIX_KEY}</div>
-            <div style={{ fontSize: "0.9rem", color: "var(--muted)" }}>Titular: {PIX_OWNER_NAME}</div>
-          </div>
-          <p style={{ fontSize: "0.92rem" }}>
-            Após pagar, descreva o pagamento ou anexe o comprovante abaixo. Nossa equipe confirma
-            manualmente e libera seu acesso individual em seguida.
-          </p>
-          {order.status === "aguardando_pagamento" ? (
-            <ComprovanteForm orderId={order.id} />
-          ) : (
-            <p style={{ fontWeight: 700, color: "var(--copper)" }}>
-              Comprovante recebido em {new Date(order.comprovante_enviado_at!).toLocaleString("pt-BR")}.
-              Aguardando aprovação da equipe.
-            </p>
+          {order.pix_qr_base64 && (
+            <img
+              src={`data:image/png;base64,${order.pix_qr_base64}`}
+              alt="QR Code Pix"
+              width={220}
+              height={220}
+              style={{ display: "block", margin: "0 auto 16px", borderRadius: 8 }}
+            />
           )}
+          {order.pix_copia_cola && <CopyPixCode code={order.pix_copia_cola} />}
+          <p style={{ fontSize: "0.85rem", color: "var(--muted)", marginTop: 14 }}>
+            Escaneie o QR Code ou use o código copia e cola no app do seu banco. O acesso é
+            liberado automaticamente assim que o pagamento for confirmado — esta página
+            atualiza sozinha.
+          </p>
         </div>
       )}
 
@@ -64,20 +62,41 @@ export default async function PedidoPage({
         </div>
       )}
 
-      {(order.status === "rejeitado" || order.status === "bloqueado") && (
+      {order.status === "expirado" && (
         <div className="card" style={{ padding: 24, marginBottom: 20 }}>
           <h2 style={{ marginTop: 0, fontSize: "1.2rem", color: "var(--danger)" }}>
-            {order.status === "rejeitado" ? "Não conseguimos confirmar o pagamento" : "Acesso bloqueado"}
+            O Pix deste pedido expirou
           </h2>
           <p style={{ color: "var(--muted)" }}>
-            {order.admin_nota || "Fale com a equipe para regularizar seu pedido."}
+            Não identificamos o pagamento a tempo. Faça um novo pedido para gerar um Pix atualizado.
+          </p>
+          <Link href="/comprar" className="btn btn-primary">
+            Gerar novo pedido
+          </Link>
+        </div>
+      )}
+
+      {order.status === "cancelado" && (
+        <div className="card" style={{ padding: 24, marginBottom: 20 }}>
+          <h2 style={{ marginTop: 0, fontSize: "1.2rem", color: "var(--danger)" }}>
+            Pedido cancelado
+          </h2>
+          <p style={{ color: "var(--muted)" }}>
+            {order.admin_nota || "Este pedido foi cancelado. Fale com a equipe se precisar de ajuda."}
           </p>
         </div>
       )}
 
-      <a href={`/pedido/${order.id}`} className="btn btn-secondary">
-        Atualizar status
-      </a>
+      {order.status === "bloqueado" && (
+        <div className="card" style={{ padding: 24, marginBottom: 20 }}>
+          <h2 style={{ marginTop: 0, fontSize: "1.2rem", color: "var(--danger)" }}>
+            Acesso bloqueado
+          </h2>
+          <p style={{ color: "var(--muted)" }}>
+            {order.admin_nota || "Fale com a equipe se acredita que isso é um engano."}
+          </p>
+        </div>
+      )}
     </main>
   );
 }

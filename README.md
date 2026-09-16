@@ -4,45 +4,64 @@ Plataforma própria para vender e entregar a revista digital "Adicional de Peric
 
 - página de vendas (`/`);
 - cadastro do comprador (`/comprar`);
-- pagamento via Pix com chave CPF, no modelo manual (`/pedido/[id]`);
-- painel administrativo para aprovar pagamentos e liberar acesso (`/admin`);
+- pagamento via Pix dinâmico gerado pelo Asaas, com liberação automática (`/pedido/[id]`);
+- painel administrativo para acompanhar pedidos e agir em casos excepcionais (`/admin`);
 - acesso individual à revista digital, por link único por comprador (`/ebook/[token]`).
 
-Este é o modelo **1 (Pix CPF com aprovação manual)** descrito em
-`docs/resumo-solucao-itamar-2026-09-16.md`, já escolhido para o lançamento. O modelo 2
-(Pix dinâmico com confirmação automática via API bancária) fica como evolução futura — a
-estrutura de pedidos já foi pensada para não precisar de retrabalho grande quando isso
-acontecer.
+Este é o modelo **2 (Pix dinâmico com confirmação automática via gateway)** descrito em
+`docs/resumo-solucao-itamar-2026-09-16.md` — o cliente decidiu evoluir do modelo manual (Pix
+CPF com aprovação manual) para este, usando o **Asaas** como gateway de pagamento.
 
 ## Fluxo de venda
 
-1. O comprador se cadastra em `/comprar` (nome, e-mail, telefone, estado).
-2. Ele é levado para `/pedido/[id]`, onde vê a chave Pix e o valor a pagar.
-3. Depois de pagar, ele descreve o pagamento e/ou anexa o comprovante na própria página.
-4. O pedido aparece no painel (`/admin`) como "Aguardando aprovação".
-5. A equipe confere o comprovante e clica em **Aprovar**. Isso gera um link de acesso
-   individual (`/ebook/<token>`), que deve ser copiado no painel e enviado manualmente ao
-   comprador (e-mail/WhatsApp — não há envio automático de e-mail nesta versão).
-6. Se um acesso for compartilhado ou precisar ser revogado, use **Bloquear acesso** no
-   painel. **Reativar acesso** gera um novo link e invalida o anterior.
+1. O comprador se cadastra em `/comprar` (nome, e-mail, telefone, estado, CPF).
+2. No cadastro, o backend cria/reaproveita um cliente no Asaas e gera uma cobrança Pix
+   (`billingType: PIX`). O comprador é levado para `/pedido/[id]`, que mostra o **QR Code**
+   e o código **copia e cola**.
+3. Assim que o Pix é pago, o Asaas confirma quase instantaneamente e envia um webhook para
+   `/api/webhooks/asaas`. O pedido é marcado como **aprovado** e recebe um token de acesso
+   individual — tudo automático, sem intervenção da equipe.
+4. A página `/pedido/[id]` fica se atualizando sozinha (poll a cada 4s) enquanto aguarda o
+   pagamento, e revela o link de acesso (`/ebook/<token>`) assim que o status muda.
+5. Se um acesso for compartilhado indevidamente, use **Bloquear acesso** no painel.
+   **Reativar acesso** gera um novo token e invalida o anterior.
+6. Se o webhook falhar por algum motivo (raro, mas pode acontecer), o pedido fica visível
+   como "Aguardando pagamento" no painel e a equipe pode clicar em **Liberar manualmente**
+   como fallback.
+
+## Configurando o Asaas
+
+1. Crie uma conta em [asaas.com](https://www.asaas.com) (ou use uma de sandbox para testar
+   primeiro em <https://sandbox.asaas.com>).
+2. Gere uma chave de API em **Configurações → Integrações → Chaves de API** e coloque em
+   `ASAAS_API_KEY`. Defina `ASAAS_ENV=sandbox` para testar ou `ASAAS_ENV=production` quando
+   for para valer.
+3. Em **Configurações → Integrações → Webhooks**, cadastre uma URL apontando para
+   `https://SEU-DOMINIO/api/webhooks/asaas`, evento **Pagamentos**, e defina um **token de
+   autenticação**. Coloque esse mesmo token em `ASAAS_WEBHOOK_TOKEN` — é assim que o app
+   confirma que o webhook realmente veio do Asaas e não de terceiros.
+4. Sem `ASAAS_API_KEY` configurada, o cadastro (`/comprar`) falha ao tentar gerar o Pix. Sem
+   `ASAAS_WEBHOOK_TOKEN`, os webhooks são rejeitados (o app nega por padrão em vez de aceitar
+   sem verificação).
 
 ## Rodando localmente
 
 ```bash
 npm install
 cp .env.example .env
-# edite o .env com a senha do painel, a chave Pix real e o preço do e-book
+# edite o .env com a senha do painel, a chave de API do Asaas (sandbox) e o token do webhook
 npm run dev
 ```
 
-Acesse `http://localhost:3000`. O painel fica em `http://localhost:3000/admin`.
+Acesse `http://localhost:3000`. O painel fica em `http://localhost:3000/admin`. Para testar
+o webhook localmente, exponha a porta com uma ferramenta como `ngrok` e cadastre a URL
+pública no painel do Asaas.
 
 ## Variáveis de ambiente
 
-Veja `.env.example`. As obrigatórias para o painel funcionar são `ADMIN_PASSWORD` e
-`ADMIN_SESSION_SECRET`. `PIX_KEY`, `PIX_OWNER_NAME` e `EBOOK_PRICE_CENTAVOS` devem ser
-ajustadas com os dados reais do Itamar antes de divulgar a página — os valores padrão são
-placeholders visíveis na tela de pagamento.
+Veja `.env.example`. As obrigatórias são `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`,
+`ASAAS_API_KEY` e `ASAAS_WEBHOOK_TOKEN`. `EBOOK_PRICE_CENTAVOS` deve ser ajustado com o
+preço real antes de divulgar a página.
 
 ## Dados e armazenamento
 
@@ -51,13 +70,10 @@ Os pedidos ficam em um banco SQLite local (`better-sqlite3`), salvo por padrão 
 rodar como um processo Node.js de longa duração com disco persistente (VPS, Docker,
 Railway, Render, etc. via `npm run build && npm start`) — **não** é compatível, sem
 adaptação, com hospedagens serverless "stateless" (ex.: funções edge da Vercel), pois estas
-não garantem disco persistente entre execuções. Se for migrar para um desses ambientes no
-futuro, troque o SQLite por um banco gerenciado (Postgres, Turso, etc.) — o acesso ao banco
-está isolado em `lib/db.ts` e `lib/orders.ts` para facilitar essa troca.
-
-Comprovantes de pagamento (imagem ou PDF, até ~3MB) são guardados como base64 dentro do
-próprio banco, o que é adequado para o volume baixo do modelo manual, mas não deve ser
-usado em grande escala.
+não garantem disco persistente entre execuções nem recebem webhooks de forma confiável sem
+configuração adicional. Se for migrar para um desses ambientes no futuro, troque o SQLite
+por um banco gerenciado (Postgres, Turso, etc.) — o acesso ao banco está isolado em
+`lib/db.ts` e `lib/orders.ts` para facilitar essa troca.
 
 ## Conteúdo da revista digital
 
@@ -73,14 +89,16 @@ navegação por capítulos foram preservados.
   adivinhável.
 - O painel permite bloquear (revogar) e reativar (gerar novo token, invalidando o antigo)
   o acesso de qualquer comprador, para lidar com compartilhamento indevido.
+- O webhook do Asaas só é aceito com o cabeçalho `asaas-access-token` correto — sem isso,
+  qualquer chamada é rejeitada com 401, então ninguém consegue "aprovar" um pedido forjando
+  uma notificação.
 - Ainda não há limite de dispositivos simultâneos nem expiração automática de sessão —
   ambos estão listados como evolução futura no resumo de solução.
 
 ## Próximos passos sugeridos
 
-- Enviar automaticamente o link de acesso por e-mail ao aprovar um pedido.
-- Migrar para Pix dinâmico com confirmação automática, quando o Itamar decidir evoluir do
-  modelo manual.
+- Enviar automaticamente o link de acesso por e-mail/WhatsApp assim que o pagamento for
+  confirmado (hoje o comprador só vê o link na própria página `/pedido/[id]`).
 - Páginas de campanha específicas por anúncio (Meta Ads / Google Ads) com parâmetros de
   rastreamento, conforme `docs/resumo-solucao-itamar-2026-09-16.md`.
 

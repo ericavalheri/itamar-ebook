@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 export default function AdminDashboardPage() {
   const orders = listOrders();
-  const pendentes = orders.filter((o) => o.status === "aguardando_aprovacao").length;
+  const aguardando = orders.filter((o) => o.status === "aguardando_pagamento").length;
 
   return (
     <main className="container" style={{ padding: "40px 20px 80px" }}>
@@ -15,9 +15,10 @@ export default function AdminDashboardPage() {
           <span className="label">Painel administrativo</span>
           <h1 style={{ margin: "12px 0 4px" }}>Compradores</h1>
           <p style={{ color: "var(--muted)", margin: 0 }}>
-            {pendentes > 0
-              ? `${pendentes} pedido(s) aguardando aprovação.`
-              : "Nenhum pedido aguardando aprovação."}
+            O acesso é liberado automaticamente pelo Asaas quando o Pix é confirmado.{" "}
+            {aguardando > 0
+              ? `${aguardando} pedido(s) aguardando pagamento.`
+              : "Nenhum pedido aguardando pagamento."}
           </p>
         </div>
         <LogoutButton />

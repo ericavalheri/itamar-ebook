@@ -24,6 +24,7 @@ export default function ComprarForm() {
       email: String(form.get("email") || "").trim(),
       telefone: String(form.get("telefone") || "").trim(),
       estado: String(form.get("estado") || "").trim(),
+      cpf: String(form.get("cpf") || "").trim(),
     };
     try {
       const res = await fetch("/api/orders", {
@@ -57,6 +58,13 @@ export default function ComprarForm() {
       <div className="field">
         <label htmlFor="telefone">Telefone / WhatsApp</label>
         <input id="telefone" name="telefone" required autoComplete="tel" placeholder="(11) 91234-5678" />
+      </div>
+      <div className="field">
+        <label htmlFor="cpf">CPF</label>
+        <input id="cpf" name="cpf" required inputMode="numeric" placeholder="000.000.000-00" maxLength={14} />
+        <span style={{ fontSize: "0.78rem", color: "var(--muted)" }}>
+          Necessário para gerar o Pix da sua compra.
+        </span>
       </div>
       <div className="field">
         <label htmlFor="estado">Estado</label>

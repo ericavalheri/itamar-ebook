@@ -173,13 +173,13 @@ a {
 }
 
 .status-aguardando_pagamento {
-  background: rgba(107, 114, 128, 0.16);
-  color: #4b5563;
-}
-
-.status-aguardando_aprovacao {
   background: rgba(230, 196, 106, 0.28);
   color: #8a6414;
+}
+
+.status-expirado {
+  background: rgba(107, 114, 128, 0.16);
+  color: #4b5563;
 }
 
 .status-aprovado {
@@ -187,7 +187,7 @@ a {
   color: var(--success);
 }
 
-.status-rejeitado,
+.status-cancelado,
 .status-bloqueado {
   background: rgba(159, 61, 48, 0.14);
   color: var(--danger);

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/auth";
-import { getOrderById, reactivateOrder } from "@/lib/orders";
+import { getOrderById, grantAccess } from "@/lib/orders";
 
 export const runtime = "nodejs";
 
@@ -16,6 +16,6 @@ export async function POST(
   if (!existing) {
     return NextResponse.json({ error: "Pedido não encontrado." }, { status: 404 });
   }
-  const order = reactivateOrder(id);
+  const order = grantAccess(id);
   return NextResponse.json({ order });
 }

@@ -62,10 +62,10 @@ export default function SalesPage() {
         <div className="card" style={{ padding: 28, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
           <div>
             <span className="label">Como funciona a compra</span>
-            <h3 style={{ margin: "10px 0 6px" }}>Cadastro, Pix e liberação do acesso</h3>
+            <h3 style={{ margin: "10px 0 6px" }}>Cadastro, Pix e liberação automática</h3>
             <p style={{ color: "var(--muted)", maxWidth: 520 }}>
-              Você faz seu cadastro, paga via Pix e envia o comprovante. Nossa equipe confirma o
-              pagamento e libera um link de acesso individual para você.
+              Você faz seu cadastro e paga com o QR Code Pix gerado na hora. Assim que o
+              pagamento é confirmado, seu acesso individual é liberado automaticamente.
             </p>
           </div>
           <Link href="/comprar" className="btn btn-primary">
