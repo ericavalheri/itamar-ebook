@@ -57,6 +57,46 @@ Acesse `http://localhost:3000`. O painel fica em `http://localhost:3000/admin`. 
 o webhook localmente, exponha a porta com uma ferramenta como `ngrok` e cadastre a URL
 pública no painel do Asaas.
 
+## Deploy no Hostinger (hPanel → Node.js App)
+
+O projeto roda como um processo Node.js de longa duração (por causa do SQLite e do
+webhook), então precisa da funcionalidade **Node.js App** do hPanel (planos Business/Cloud
+da Hostinger), não hospedagem PHP simples.
+
+1. **hPanel → Avançado → Node.js → Criar aplicação**:
+   - Versão do Node: 20.x (ou a mais recente disponível).
+   - Raiz da aplicação: a pasta onde o projeto vai ficar (ex.: `itamar-ebook`).
+   - URL da aplicação: `honestamente-itamar.agenciacavalheri.com.br`.
+   - Arquivo de inicialização (`startup file`): `server.js` — esse arquivo já está pronto no
+     repo, ele escuta na porta que o Passenger/hPanel define via `process.env.PORT`
+     (diferente de `next start`, que não respeita isso da mesma forma).
+2. **Levar o código para a pasta da aplicação**: pela aba **Git** do painel Node.js
+   (aponte para `https://github.com/ericavalheri/itamar-ebook`, branch
+   `claude/itamar-ebooks-sales-platform-n34b48` ou a branch que for usar em produção), ou via
+   FTP/File Manager se preferir enviar os arquivos manualmente.
+3. **Variáveis de ambiente**: no painel Node.js tem uma seção de variáveis — preencha com os
+   mesmos nomes do `.env.example` (`ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`,
+   `EBOOK_PRICE_CENTAVOS`, `ASAAS_API_KEY`, `ASAAS_ENV=production`, `ASAAS_WEBHOOK_TOKEN`),
+   com valores reais — nunca os de teste usados durante o desenvolvimento.
+4. **Instalar dependências**: use o botão "Executar comando NPM install" do painel (ou, se
+   tiver acesso SSH, `npm install` manualmente na pasta da aplicação).
+5. **Banco de dados persistente**: por padrão o SQLite é salvo em `./data/` dentro da pasta
+   do projeto. Se cada deploy/git pull recriar essa pasta, os pedidos gravados se perdem.
+   Para evitar isso, defina `DATA_DIR` apontando para um caminho **fora** da pasta do
+   projeto (ex.: `/home/SEU-USUARIO/dados-itamar-ebook`), criado manualmente uma vez, fora
+   do controle do Git.
+6. **Rodar o build e reiniciar**: rode `npm run build` (pelo terminal SSH, se disponível, ou
+   configure como parte do processo de deploy do painel) e reinicie a aplicação Node.js pelo
+   hPanel.
+7. **Webhook do Asaas**: depois que o site estiver acessível em
+   `https://honestamente-itamar.agenciacavalheri.com.br`, cadastre no Asaas a URL
+   `https://honestamente-itamar.agenciacavalheri.com.br/api/webhooks/asaas` como descrito em
+   "Configurando o Asaas" acima.
+
+Se o `npm install` falhar tentando compilar o `better-sqlite3` (módulo nativo — alguns
+planos de hospedagem compartilhada não têm as ferramentas de compilação necessárias), me
+avise: nesse caso trocamos o SQLite por uma alternativa sem compilação nativa.
+
 ## Variáveis de ambiente
 
 Veja `.env.example`. As obrigatórias são `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`,
