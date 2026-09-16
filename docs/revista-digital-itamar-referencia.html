@@ -1,0 +1,1087 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adicional de Periculosidade | Revista Digital Itamar</title>
+  <meta name="description" content="Revista digital protegida sobre adicional de periculosidade, cálculo, base legal e conferência de holerite.">
+  <style>
+    :root {
+      --ink: #17212f;
+      --navy: #111d2f;
+      --navy-soft: #1b2b43;
+      --petrol: #0c6661;
+      --mint: #57b99e;
+      --sand: #f4eadb;
+      --paper: #fffaf1;
+      --copper: #c77842;
+      --gold: #e6c46a;
+      --line: rgba(23, 33, 47, 0.14);
+      --muted: #6b7280;
+      --danger: #9f3d30;
+      --shadow: 0 28px 80px rgba(10, 20, 34, 0.22);
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100svh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 80% 0%, rgba(199, 120, 66, 0.18), transparent 26rem),
+        linear-gradient(135deg, #f8f1e6 0%, #efe1cd 45%, #dde6df 100%);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    body.locked .app-shell { display: none; }
+    body.unlocked .login-screen { display: none; }
+
+    button, input { font: inherit; }
+    button { cursor: pointer; border: 0; }
+    a { color: inherit; }
+
+    :focus-visible {
+      outline: 3px solid rgba(199, 120, 66, 0.72);
+      outline-offset: 3px;
+    }
+
+    .login-screen {
+      min-height: 100svh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      color: #fffaf1;
+      background:
+        linear-gradient(rgba(17, 29, 47, 0.82), rgba(17, 29, 47, 0.92)),
+        linear-gradient(125deg, #111d2f, #0c6661 58%, #c77842);
+    }
+
+    .login-panel {
+      width: min(960px, 100%);
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      overflow: hidden;
+      border: 1px solid rgba(255, 250, 241, 0.2);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      background: rgba(255, 250, 241, 0.08);
+      backdrop-filter: blur(18px);
+    }
+
+    .login-hero {
+      min-height: 580px;
+      padding: clamp(28px, 5vw, 58px);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background:
+        linear-gradient(160deg, rgba(17, 29, 47, 0.88), rgba(12, 102, 97, 0.66)),
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0 1px, transparent 1px 72px);
+    }
+
+    .label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      padding: 8px 10px;
+      border: 1px solid rgba(230, 196, 106, 0.44);
+      border-radius: 999px;
+      color: #f6df9d;
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .login-hero h1 {
+      max-width: 100%;
+      margin: 28px 0 16px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(3.1rem, 5.6vw, 5.8rem);
+      line-height: 0.92;
+      letter-spacing: 0;
+      overflow-wrap: break-word;
+    }
+
+    .login-hero p {
+      max-width: 34rem;
+      margin: 0;
+      color: rgba(255, 250, 241, 0.82);
+      font-size: clamp(1rem, 1.7vw, 1.2rem);
+      line-height: 1.65;
+    }
+
+    .login-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 34px;
+    }
+
+    .stat {
+      min-height: 92px;
+      padding: 16px;
+      border: 1px solid rgba(255, 250, 241, 0.16);
+      border-radius: 8px;
+      background: rgba(255, 250, 241, 0.08);
+    }
+
+    .stat strong {
+      display: block;
+      color: #f6df9d;
+      font-size: 1.35rem;
+    }
+
+    .stat span {
+      display: block;
+      margin-top: 6px;
+      color: rgba(255, 250, 241, 0.72);
+      font-size: 0.82rem;
+      line-height: 1.35;
+    }
+
+    .login-form {
+      padding: clamp(26px, 4vw, 44px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: var(--paper);
+      color: var(--ink);
+    }
+
+    .login-form h2 {
+      margin: 0 0 10px;
+      font-size: clamp(1.55rem, 3vw, 2.3rem);
+      line-height: 1.05;
+    }
+
+    .login-form p {
+      margin: 0 0 24px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .login-form label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .password-row {
+      display: grid;
+      gap: 12px;
+    }
+
+    .password-row input {
+      width: 100%;
+      min-height: 52px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--ink);
+      background: #ffffff;
+    }
+
+    .primary-btn {
+      min-height: 52px;
+      padding: 0 18px;
+      border-radius: 8px;
+      color: #fffaf1;
+      background: linear-gradient(135deg, var(--petrol), var(--navy));
+      font-weight: 800;
+      box-shadow: 0 12px 28px rgba(12, 102, 97, 0.22);
+    }
+
+    .error-box {
+      min-height: 22px;
+      margin-top: 14px;
+      color: var(--danger);
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .app-shell {
+      min-height: 100svh;
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100svh;
+      overflow: auto;
+      padding: 22px;
+      color: #f8f1e6;
+      background: linear-gradient(180deg, var(--navy), #0b1422);
+      border-right: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .brand {
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .brand strong {
+      display: block;
+      margin-top: 12px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 2.1rem;
+      line-height: 0.94;
+    }
+
+    .brand span {
+      display: block;
+      margin-top: 10px;
+      color: rgba(248,241,230,0.68);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .tools {
+      display: grid;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .tools input {
+      width: 100%;
+      min-height: 44px;
+      padding: 0 12px;
+      color: #fffaf1;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 8px;
+    }
+
+    .nav-list {
+      display: grid;
+      gap: 6px;
+    }
+
+    .nav-item {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 11px;
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 8px;
+      align-items: center;
+      color: rgba(248,241,230,0.76);
+      background: transparent;
+      border-left: 3px solid transparent;
+      border-radius: 8px;
+      text-align: left;
+    }
+
+    .nav-item:hover, .nav-item.is-active {
+      color: #fffaf1;
+      background: rgba(255,255,255,0.08);
+      border-color: var(--gold);
+    }
+
+    .nav-item b {
+      color: #f6df9d;
+      font-size: 0.74rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .sidebar-footer {
+      margin-top: 24px;
+      padding-top: 18px;
+      color: rgba(248,241,230,0.6);
+      border-top: 1px solid rgba(255,255,255,0.12);
+      font-size: 0.78rem;
+      line-height: 1.5;
+    }
+
+    .reader {
+      min-width: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      min-height: 64px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      padding: 12px clamp(16px, 4vw, 36px);
+      background: rgba(244, 234, 219, 0.84);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .chapter-status {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 800;
+    }
+
+    .progress {
+      width: min(280px, 25vw);
+      height: 8px;
+      overflow: hidden;
+      background: rgba(17, 29, 47, 0.13);
+      border-radius: 999px;
+    }
+
+    .progress span {
+      display: block;
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, var(--petrol), var(--copper));
+      border-radius: inherit;
+      transition: width 220ms ease;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--navy);
+      background: rgba(255,250,241,0.84);
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+
+    .magazine {
+      padding: clamp(20px, 4vw, 42px);
+      display: grid;
+      gap: 20px;
+      align-content: start;
+    }
+
+    .spread {
+      min-height: calc(100svh - 120px);
+      display: none;
+      grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1.1fr);
+      overflow: hidden;
+      border: 1px solid rgba(17,29,47,0.12);
+      border-radius: 8px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+
+    .spread.is-active { display: grid; }
+
+    .visual-panel {
+      position: relative;
+      min-height: 620px;
+      padding: clamp(24px, 4vw, 48px);
+      color: #fffaf1;
+      background:
+        linear-gradient(160deg, rgba(17, 29, 47, 0.95), rgba(12, 102, 97, 0.85)),
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0 1px, transparent 1px 64px);
+    }
+
+    .visual-panel::after {
+      content: "";
+      position: absolute;
+      inset: auto 24px 24px auto;
+      width: min(240px, 42%);
+      aspect-ratio: 1;
+      border: 1px solid rgba(246, 223, 157, 0.36);
+      background:
+        linear-gradient(135deg, transparent 49%, rgba(246,223,157,0.28) 50%, transparent 51%),
+        linear-gradient(45deg, transparent 49%, rgba(87,185,158,0.28) 50%, transparent 51%);
+      opacity: 0.75;
+    }
+
+    .visual-panel h2 {
+      position: relative;
+      z-index: 1;
+      max-width: 11ch;
+      margin: 18px 0 16px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2.9rem, 6vw, 5.8rem);
+      line-height: 0.88;
+    }
+
+    .visual-panel p {
+      position: relative;
+      z-index: 1;
+      max-width: 31rem;
+      color: rgba(255,250,241,0.78);
+      line-height: 1.65;
+    }
+
+    .content-panel {
+      min-width: 0;
+      padding: clamp(24px, 4vw, 52px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .kicker {
+      color: var(--copper);
+      font-size: 0.76rem;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .content-panel h3 {
+      margin: 10px 0 18px;
+      font-size: clamp(1.9rem, 4vw, 3.35rem);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      margin: 0 0 22px;
+      color: #344255;
+      font-size: clamp(1rem, 1.6vw, 1.14rem);
+      line-height: 1.72;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .note, .mini-card, .formula, .check-item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .note {
+      padding: 18px;
+      border-left: 5px solid var(--copper);
+      color: #263448;
+      line-height: 1.58;
+    }
+
+    .mini-card {
+      padding: 16px;
+      min-height: 118px;
+    }
+
+    .mini-card strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--navy);
+    }
+
+    .mini-card span {
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .formula {
+      padding: 18px;
+      background: #111d2f;
+      color: #fffaf1;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(1.1rem, 2vw, 1.45rem);
+      line-height: 1.5;
+    }
+
+    .steps {
+      display: grid;
+      gap: 10px;
+      counter-reset: steps;
+    }
+
+    .check-item {
+      padding: 14px 16px;
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 12px;
+      align-items: start;
+      line-height: 1.5;
+    }
+
+    .check-item::before {
+      counter-increment: steps;
+      content: counter(steps, decimal-leading-zero);
+      color: var(--copper);
+      font-weight: 900;
+      font-size: 0.8rem;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      min-width: 640px;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+
+    th, td {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: #fffaf1;
+      background: var(--navy-soft);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+    td.money { font-weight: 900; white-space: nowrap; }
+
+    .calculator {
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .calc-row {
+      display: grid;
+      grid-template-columns: 1fr 150px;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .calc-row label {
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .calc-row input {
+      width: 100%;
+      min-height: 44px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      text-align: right;
+    }
+
+    .calc-result {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .result-box {
+      padding: 14px;
+      border-radius: 8px;
+      background: #f4eadb;
+    }
+
+    .result-box small {
+      display: block;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .result-box strong {
+      display: block;
+      margin-top: 5px;
+      color: var(--navy);
+      font-size: 1.18rem;
+    }
+
+    .legal {
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.55;
+    }
+
+    .references {
+      display: grid;
+      gap: 8px;
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .mobile-title {
+      display: none;
+      padding: 18px 16px 0;
+    }
+
+    .mobile-title h1 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 2.8rem;
+      line-height: 0.94;
+    }
+
+    mark {
+      padding: 0 3px;
+      background: rgba(230,196,106,0.55);
+      border-radius: 4px;
+    }
+
+    @media (max-width: 980px) {
+      .login-panel, .app-shell { grid-template-columns: 1fr; }
+      .app-shell {
+        display: flex;
+        flex-direction: column;
+      }
+      .reader { order: 1; }
+      .sidebar { order: 2; }
+      .login-hero { min-height: auto; }
+      .login-stats { grid-template-columns: 1fr; }
+      .sidebar {
+        position: static;
+        height: auto;
+        padding: 16px;
+      }
+      .brand { display: none; }
+      .tools { margin: 0 0 12px; }
+      .nav-list {
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+      .nav-item {
+        min-width: 190px;
+        grid-template-columns: 1fr;
+      }
+      .reader { display: block; }
+      .topbar { top: 0; }
+      .progress { width: min(180px, 34vw); }
+      .mobile-title { display: block; }
+      .magazine { padding: 16px; }
+      .spread, .spread.is-active {
+        display: grid;
+        min-height: auto;
+        grid-template-columns: 1fr;
+      }
+      .visual-panel {
+        min-height: 280px;
+      }
+      .visual-panel::after {
+        opacity: 0.2;
+      }
+      .visual-panel h2 {
+        max-width: 12ch;
+        font-size: 3rem;
+      }
+      .content-panel { padding: 24px 18px; }
+      .grid, .calc-result { grid-template-columns: 1fr; }
+      .calc-row { grid-template-columns: 1fr; }
+      .calc-row input { text-align: left; }
+    }
+
+    @media (max-width: 560px) {
+      .login-screen { padding: 0; }
+      .login-panel { min-height: 100svh; border-radius: 0; }
+      .login-hero h1 { font-size: 3.1rem; }
+      .chapter-status span { display: none; }
+      .topbar { padding: 10px 12px; }
+      .magazine { padding: 12px; }
+      .visual-panel { padding: 22px; }
+      .visual-panel h2 { font-size: 2.6rem; }
+      .content-panel h3 { font-size: 2rem; }
+    }
+
+    @media print {
+      .login-screen, .sidebar, .topbar { display: none !important; }
+      .app-shell { display: block; }
+      .spread { display: grid !important; box-shadow: none; page-break-after: always; }
+    }
+  </style>
+</head>
+<body class="locked">
+  <section class="login-screen" aria-labelledby="login-title">
+    <div class="login-panel">
+      <div class="login-hero">
+        <div>
+          <span class="label">Série Verbas Trabalhistas - Volume 01</span>
+          <h1>Adicional de Periculosidade</h1>
+          <p>Manual prático para entender quem tem direito, como calcular e como conferir se o pagamento está correto no holerite.</p>
+        </div>
+        <div class="login-stats" aria-label="Resumo do conteúdo">
+          <div class="stat"><strong>30%</strong><span>percentual legal sobre o salário base</span></div>
+          <div class="stat"><strong>10</strong><span>blocos de leitura prática</span></div>
+          <div class="stat"><strong>5 min</strong><span>para fazer uma primeira conferência</span></div>
+        </div>
+      </div>
+      <form class="login-form" method="post" action="/login">
+        <span class="label">Acesso protegido</span>
+        <h2 id="login-title">Digite a senha para ler</h2>
+        <p>Conteúdo exclusivo para compradores do e-book. O acesso inicial usa senha simples e pode evoluir para login individual depois.</p>
+        <div class="password-row">
+          <label for="password">Senha de acesso</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required>
+          <button class="primary-btn" type="submit">Entrar na revista</button>
+        </div>
+        <div class="error-box" id="login-error" role="status"></div>
+      </form>
+    </div>
+  </section>
+
+  <!-- APP_START -->
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="label">Honestamente, Itamar</span>
+        <strong>Adicional de Periculosidade</strong>
+        <span>Conhecimento, orientação e direitos para o trabalhador brasileiro.</span>
+      </div>
+      <div class="tools">
+        <input id="search" type="search" placeholder="Buscar no e-book" aria-label="Buscar no e-book">
+      </div>
+      <nav class="nav-list" aria-label="Capítulos">
+        <button class="nav-item is-active" data-page="0"><b>00</b><span>Capa e visão geral</span></button>
+        <button class="nav-item" data-page="1"><b>01</b><span>O que é</span></button>
+        <button class="nav-item" data-page="2"><b>02</b><span>Quem tem direito</span></button>
+        <button class="nav-item" data-page="3"><b>03</b><span>Base legal</span></button>
+        <button class="nav-item" data-page="4"><b>04</b><span>Cálculo e reflexos</span></button>
+        <button class="nav-item" data-page="5"><b>05</b><span>Exemplo prático</span></button>
+        <button class="nav-item" data-page="6"><b>06</b><span>Contracheque</span></button>
+        <button class="nav-item" data-page="7"><b>07</b><span>Documentos</span></button>
+        <button class="nav-item" data-page="8"><b>08</b><span>Conferência</span></button>
+        <button class="nav-item" data-page="9"><b>09</b><span>Erros comuns</span></button>
+      </nav>
+      <div class="sidebar-footer">
+        Material informativo baseado no PDF enviado por Erica em 27/08/2026 e conferido com fontes oficiais. Não substitui análise jurídica do caso concreto.
+      </div>
+    </aside>
+
+    <main class="reader">
+      <div class="topbar">
+        <div class="chapter-status">
+          <span id="page-label">Capítulo 00 de 09</span>
+          <div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+        </div>
+        <div class="top-actions">
+          <button class="icon-btn" id="prev" type="button" aria-label="Capítulo anterior" title="Capítulo anterior">&lt;</button>
+          <button class="icon-btn" id="next" type="button" aria-label="Próximo capítulo" title="Próximo capítulo">&gt;</button>
+          <a class="icon-btn" href="/logout" aria-label="Sair" title="Sair">x</a>
+        </div>
+      </div>
+
+      <div class="mobile-title">
+        <span class="label">Revista digital</span>
+        <h1>Adicional de Periculosidade</h1>
+      </div>
+
+      <article class="magazine" id="magazine">
+        <section class="spread is-active" data-title="Capa e visão geral">
+          <div class="visual-panel">
+            <span class="label">E-book especial</span>
+            <h2>Direito, cálculo e conferência</h2>
+            <p>Uma leitura guiada para transformar um tema técnico em uma checagem clara: quem tem direito, quanto deve receber e quais documentos sustentam a apuração.</p>
+          </div>
+          <div class="content-panel">
+            <span class="kicker">Comece por aqui</span>
+            <h3>O mapa rápido da periculosidade</h3>
+            <p class="lead">O adicional de periculosidade é uma verba trabalhista devida quando o trabalhador atua em condições de risco acentuado à vida ou à integridade física.</p>
+            <div class="grid">
+              <div class="mini-card"><strong>Percentual</strong><span>30% sobre o salário básico mensal, sem acréscimos de gratificações, prêmios ou PLR.</span></div>
+              <div class="mini-card"><strong>Natureza</strong><span>Enquanto pago, possui natureza salarial e impacta reflexos trabalhistas e previdenciários.</span></div>
+              <div class="mini-card"><strong>Prova</strong><span>LTCAT, PGR/PPRA, PPP, ficha de registro, CTPS e documentos de EPI ajudam a sustentar a análise.</span></div>
+              <div class="mini-card"><strong>Conferência</strong><span>Salário base, percentual, holerite, horas extras e bases de INSS/FGTS precisam conversar entre si.</span></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="spread" data-title="O que é">
+          <div class="visual-panel">
+            <span class="label">01 - Conceito</span>
+            <h2>Risco acentuado não é detalhe</h2>
+            <p>A diferença central para a insalubridade é o tipo de exposição: aqui o foco é o risco de sinistro grave ou fatal, mesmo que não haja dano lento e cumulativo à saúde.</p>
+          </div>
+          <div class="content-panel">
+            <span class="kicker">O que é</span>
+            <h3>Uma compensação financeira por risco à vida</h3>
+            <p class="lead">O adicional de periculosidade é devido aos trabalhadores que exercem atividades em condições de risco acentuado e iminente à vida ou à integridade física.</p>
+            <div class="note"><strong>Nota fundamental:</strong> enquanto pago, o adicional integra a base de cálculo de diversos haveres trabalhistas e previdenciários, como férias, 13º salário, FGTS, aviso prévio e horas extras.</div>
+          </div>
+        </section>
+
+        <section class="spread" data-title="Quem tem direito">
+          <div class="visual-panel">
+            <span class="label">02 - Direito</span>
+            <h2>Quem pode receber</h2>
+            <p>A análise depende da atividade real, do contato com o risco e da regulamentação aplicável. Cargo sozinho não resolve: função e ambiente importam.</p>
+          </div>
+          <div class="content-panel">
+            <span class="kicker">Quem tem direito</span>
+            <h3>Atividades com risco reconhecido</h3>
+            <p class="lead">Têm direito os empregados regidos pela CLT que desempenham atividades em contato permanente ou em condições de risco acentuado.</p>
+            <div class="grid">
+              <div class="mini-card"><strong>Explosivos</strong><span>Armazenamento, transporte, fabricação ou detonação.</span></div>
+              <div class="mini-card"><strong>Inflamáveis</strong><span>Postos de combustível, transporte de liquefeitos ou líquidos inflamáveis e manutenção de tanques.</span></div>
+              <div class="mini-card"><strong>Energia elétrica</strong><span>Trabalho em sistema elétrico de potência ou em alta/baixa tensão em condição de risco equivalente.</span></div>
+              <div class="mini-card"><strong>Segurança</strong><span>Vigilantes e profissionais expostos a roubos ou violência física.</span></div>
+              <div class="mini-card"><strong>Motocicleta</strong><span>Trabalhadores que usam motocicleta em vias públicas no exercício do trabalho.</span></div>
+              <div class="mini-card"><strong>Radiações ionizantes</strong><span>Operação de raio-X, medicina nuclear ou transporte de isótopos, conforme normas aplicáveis.</span></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="spread" data-title="Base legal">
+          <div class="visual-panel">
+            <span class="label">03 - Lei</span>
+            <h2>A base que sustenta a verba</h2>
+            <p>Constituição, CLT, NR-16 e súmulas do TST formam a espinha dorsal da análise.</p>
+          </div>
+          <div class="content-panel">
+            <span class="kicker">Base legal e jurisprudência</span>
+            <h3>Onde a regra aparece</h3>
+            <div class="steps">
+              <div class="check-item"><div><strong>Art. 7º, XXIII, da Constituição:</strong> prevê adicional de remuneração para atividades penosas, insalubres ou perigosas, na forma da lei.</div></div>
+              <div class="check-item"><div><strong>Arts. 193 a 197 da CLT:</strong> definem atividades perigosas, regulamentação e direito ao adicional.</div></div>
+              <div class="check-item"><div><strong>NR-16/MTE:</strong> detalha anexos técnicos e critérios operacionais de caracterização do risco.</div></div>
+              <div class="check-item"><div><strong>Súmula 191 do TST:</strong> trata da base de cálculo do adicional, em regra sobre o salário básico.</div></div>
+              <div class="check-item"><div><strong>Súmula 364 do TST:</strong> reconhece o direito em exposição permanente ou intermitente, excluindo contato eventual ou extremamente reduzido.</div></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="spread" data-title="Cálculo e reflexos">
+          <div class="visual-panel">
+            <span class="label">04 - Cálculo</span>
+            <h2>30% sem chute</h2>
+            <p>A conta principal é simples, mas os reflexos costumam ser o ponto em que muita empresa erra.</p>
+          </div>
+          <div class="content-panel">
+            <span class="kicker">Percentual e base</span>
+            <h3>O adicional é fixo e indisponível</h3>
+            <p class="lead">O percentual legal é de 30%, calculado sobre o salário básico do empregado, sem acréscimo de gratificações, prêmios ou participações nos lucros.</p>
+            <div class="formula">Adicional de Periculosidade = Salário Básico Mensal x 0,30</div>
+            <div class="note"><strong>Atenção:</strong> preenchidos os requisitos, o valor é devido integralmente no mês. O empregado também não pode cumular periculosidade e insalubridade; quando fizer jus a ambos, deve optar pelo mais favorável.</div>
+          </div>
+        </section>
+
+        <section class="spread" data-title="Exemplo prático">
+          <div class="visual-panel">
+            <span class="label">05 - Exemplo</span>
+            <h2>Simule antes de aceitar</h2>
+            <p>Use a calculadora como primeira leitura. Ela não substitui perícia ou análise jurídica, mas ajuda a identificar inconsistência óbvia.</p>
+          </div>
+          <div class="content-panel">
+            <span class="kicker">Exemplo prático</span>
+            <h3>Vigilante patrimonial armado</h3>
+            <p class="lead">Caso hipotético do PDF: salário básico mensal de R$ 3.000, jornada mensal de 220 horas e 10 horas extras no mês com adicional de 50%.</p>
+            <div class="calculator" aria-label="Calculadora de periculosidade">
+              <div class="calc-row"><label for="salary">Salário básico mensal</label><input id="salary" inputmode="decimal" value="3000"></div>
+              <div class="calc-row"><label for="hours">Horas mensais</label><input id="hours" inputmode="decimal" value="220"></div>
+              <div class="calc-row"><label for="extra">Horas extras 50%</label><input id="extra" inputmode="decimal" value="10"></div>
+              <div class="calc-result">
+                <div class="result-box"><small>Periculosidade</small><strong id="danger-pay">R$ 900,00</strong></div>
+                <div class="result-box"><small>Hora extra</small><strong id="extra-hour">R$ 26,59</strong></div>
+                <div class="result-box"><small>FGTS estimado</small><strong id="fgts">R$ 333,27</strong></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="spread" data-title="Contracheque">
+          <div class="visual-panel">
+            <span class="label">06 - Holerite</span>
+            <h2>Como o pagamento aparece</h2>
+            <p>O contracheque precisa mostrar eventos, referências, vencimentos, descontos e bases de cálculo coerentes com a apuração.</p>
+          </div>
+          <div class="content-panel">
+            <span class="kicker">Modelo demonstrativo</span>
+            <h3>Representação contábil no holerite</h3>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Cód.</th><th>Descrição</th><th>Referência</th><th>Vencimentos</th><th>Descontos</th></tr></thead>
+                <tbody>
+                  <tr><td>001</td><td>Salário Base Mensal</td><td>30 dias</td><td class="money">R$ 3.000,00</td><td>-</td></tr>
+                  <tr><td>042</td><td>Adicional de Periculosidade (30%)</td><td>30,00%</td><td class="money">R$ 900,00</td><td>-</td></tr>
+                  <tr><td>105</td><td>Horas Extras 50% com periculosidade</td><td>10:00 hs</td><td class="money">R$ 265,90</td><td>-</td></tr>
+                  <tr><td>901</td><td>INSS sobre Salário</td><td>14,00%</td><td>-</td><td class="money">R$ 428,14</td></tr>
+                  <tr><td>905</td><td>IRRF sobre Salário</td><td>7,50%</td><td>-</td><td class="money">R$ 112,40</td></tr>
+                  <tr><td colspan="3"><strong>Totalizadores</strong></td><td class="money">R$ 4.165,90</td><td class="money">R$ 540,54</td></tr>
+                  <tr><td colspan="4"><strong>Valor líquido a receber</strong></td><td class="money">R$ 3.625,36</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="spread" data-title="Documentos">
+          <div class="visual-panel">
+            <span class="label">07 - Provas</span>
+            <h2>Documentos que importam</h2>
+            <p>Para conceder, auditar ou questionar o adicional, a documentação técnica e trabalhista precisa estar organizada.</p>
+          </div>
+          <div class="content-panel">
+            <span class="kicker">Documentos comprobatórios</span>
+            <h3>O que levantar</h3>
+            <div class="grid">
+              <div class="mini-card"><strong>LTCAT</strong><span>Laudo técnico das condições ambientais do trabalho.</span></div>
+              <div class="mini-card"><strong>PGR / PPRA</strong><span>Identificação de perigos e mapeamento das áreas de risco.</span></div>
+              <div class="mini-card"><strong>PPP</strong><span>Histórico-laboral individualizado com agentes nocivos e perigosos.</span></div>
+              <div class="mini-card"><strong>Registro e CTPS</strong><span>Comprovação de cargo e descrição analítica das funções.</span></div>
+              <div class="mini-card"><strong>EPIs / ordem de serviço</strong><span>Comprovação de entrega e orientação, lembrando que EPI não neutraliza periculosidade como regra geral.</span></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="spread" data-title="Conferência">
+          <div class="visual-panel">
+            <span class="label">08 - Auditoria</span>
+            <h2>Confira em cinco passos</h2>
+            <p>Um roteiro simples para trabalhador ou RH identificarem se a verba está compatível com a regra apresentada.</p>
+          </div>
+          <div class="content-panel">
+            <span class="kicker">Como conferir</span>
+            <h3>Passo a passo de leitura do holerite</h3>
+            <div class="steps">
+              <div class="check-item"><div><strong>Verifique o salário básico:</strong> localize o valor contratual sem acréscimos na CTPS ou contrato.</div></div>
+              <div class="check-item"><div><strong>Calcule o valor devido:</strong> multiplique o salário básico por 0,30.</div></div>
+              <div class="check-item"><div><strong>Compare com o holerite:</strong> confira se a rubrica corresponde ao valor apurado.</div></div>
+              <div class="check-item"><div><strong>Confira os reflexos:</strong> veja se as horas extras usam salário básico + periculosidade como base.</div></div>
+              <div class="check-item"><div><strong>Valide INSS/FGTS:</strong> confirme se o adicional entrou nas bases tributáveis do mês.</div></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="spread" data-title="Erros comuns">
+          <div class="visual-panel">
+            <span class="label">09 - Alertas</span>
+            <h2>Erros que custam caro</h2>
+            <p>A maioria dos problemas aparece em proporcionalidade indevida, reflexos esquecidos e base de cálculo mal interpretada.</p>
+          </div>
+          <div class="content-panel">
+            <span class="kicker">Erros comuns na prática</span>
+            <h3>O que observar em fiscalizações e perícias</h3>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Erro cometido</th><th>Forma correta / exigência legal</th></tr></thead>
+                <tbody>
+                  <tr><td>Pagar o adicional proporcional às horas de exposição.</td><td>O adicional deve ser pago integralmente, salvo contato eventual ou extremamente reduzido.</td></tr>
+                  <tr><td>Não incluir o adicional na base de cálculo de horas extras.</td><td>A periculosidade integra o valor da hora normal para cálculo das horas extras.</td></tr>
+                  <tr><td>Entender que EPI neutraliza a periculosidade.</td><td>O EPI não elimina, por si só, o direito ao adicional quando o risco permanece.</td></tr>
+                  <tr><td>Calcular periculosidade sobre salário mínimo.</td><td>A base é o salário básico do empregado, salvo regra específica aplicável.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="references">
+              <strong>Fontes oficiais conferidas:</strong>
+              <a href="https://www.planalto.gov.br/ccivil_03/decreto-lei/del5452.htm" target="_blank" rel="noreferrer">CLT - Decreto-Lei 5.452/1943</a>
+              <a href="https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/norma-regulamentadora-no-16-nr-16" target="_blank" rel="noreferrer">NR-16 - Ministério do Trabalho e Emprego</a>
+              <a href="https://www.tst.jus.br/-/tst-esclarece-concessao-do-adicional-de-periculosidade" target="_blank" rel="noreferrer">TST - Súmula 364 e concessão de periculosidade</a>
+              <a href="https://www.tst.jus.br/-/tst-esclarece-regra-sobre-o-adicional-de-periculosidade" target="_blank" rel="noreferrer">TST - Súmula 191 e base de cálculo</a>
+            </div>
+            <p class="legal">Aviso: este e-book é material educativo e não substitui consulta jurídica, perícia técnica ou análise individual de documentos.</p>
+          </div>
+        </section>
+      </article>
+    </main>
+  </div>
+
+  <!-- APP_END -->
+  <script>
+    const pages = [...document.querySelectorAll(".spread")];
+    const navItems = [...document.querySelectorAll(".nav-item")];
+    const progressBar = document.querySelector("#progress-bar");
+    const pageLabel = document.querySelector("#page-label");
+    const search = document.querySelector("#search");
+    const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+    let current = 0;
+
+    function setPage(index) {
+      current = Math.max(0, Math.min(index, pages.length - 1));
+      pages.forEach((page, i) => page.classList.toggle("is-active", i === current));
+      navItems.forEach((item, i) => item.classList.toggle("is-active", i === current));
+      progressBar.style.width = `${((current + 1) / pages.length) * 100}%`;
+      pageLabel.textContent = `Capítulo ${String(current).padStart(2, "0")} de ${String(pages.length - 1).padStart(2, "0")}`;
+      pages[current].scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function parseValue(value) {
+      return Number(String(value).replace(/\./g, "").replace(",", ".")) || 0;
+    }
+
+    function updateCalc() {
+      const salary = parseValue(document.querySelector("#salary").value);
+      const hours = parseValue(document.querySelector("#hours").value) || 220;
+      const extra = parseValue(document.querySelector("#extra").value);
+      const danger = salary * 0.3;
+      const normalHour = (salary + danger) / hours;
+      const extraHour = normalHour * 1.5;
+      const extraTotal = extraHour * extra;
+      const fgts = (salary + danger + extraTotal) * 0.08;
+      document.querySelector("#danger-pay").textContent = money.format(danger);
+      document.querySelector("#extra-hour").textContent = money.format(extraHour);
+      document.querySelector("#fgts").textContent = money.format(fgts);
+    }
+
+    function clearMarks(root) {
+      root.querySelectorAll("mark").forEach((mark) => mark.replaceWith(document.createTextNode(mark.textContent)));
+    }
+
+    function highlight(term) {
+      pages.forEach(clearMarks);
+      if (!term || term.length < 3) return;
+      const regex = new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
+      pages.forEach((page) => {
+        const walker = document.createTreeWalker(page, NodeFilter.SHOW_TEXT);
+        const nodes = [];
+        while (walker.nextNode()) nodes.push(walker.currentNode);
+        nodes.forEach((node) => {
+          if (!regex.test(node.nodeValue)) return;
+          regex.lastIndex = 0;
+          const span = document.createElement("span");
+          span.innerHTML = node.nodeValue.replace(regex, (match) => `<mark>${match}</mark>`);
+          node.replaceWith(span);
+        });
+      });
+    }
+
+    navItems.forEach((item) => item.addEventListener("click", () => setPage(Number(item.dataset.page))));
+    document.querySelector("#prev").addEventListener("click", () => setPage(current - 1));
+    document.querySelector("#next").addEventListener("click", () => setPage(current + 1));
+    document.querySelectorAll(".calculator input").forEach((input) => input.addEventListener("input", updateCalc));
+    search.addEventListener("input", (event) => highlight(event.target.value.trim()));
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowRight") setPage(current + 1);
+      if (event.key === "ArrowLeft") setPage(current - 1);
+    });
+
+    const params = new URLSearchParams(location.search);
+    if (params.get("erro") === "senha") {
+      const box = document.querySelector("#login-error");
+      if (box) box.textContent = "Senha incorreta. Confira e tente de novo.";
+    }
+
+    setPage(0);
+    updateCalc();
+  </script>
+</body>
+</html>
