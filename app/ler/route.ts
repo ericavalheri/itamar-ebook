@@ -1,7 +1,9 @@
 import { NextRequest } from "next/server";
+import { cookies } from "next/headers";
 import fs from "node:fs";
 import path from "node:path";
-import { getOrderByToken } from "@/lib/orders";
+import { getOrderByActiveSession } from "@/lib/orders";
+import { READER_COOKIE_NAME } from "@/lib/reader-session";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,6 +15,39 @@ function readEbookContent() {
   cachedContent = fs.readFileSync(filePath, "utf8");
   return cachedContent;
 }
+
+// Polls the session while the reader is open and kicks the buyer back to
+// /acessar the moment another device logs in and takes over the session —
+// that's what makes "logging in elsewhere ends this session" feel immediate
+// instead of only on the next page load.
+const SESSION_WATCHER_SCRIPT = `
+<script>
+(function () {
+  async function checkSession() {
+    try {
+      const res = await fetch("/api/acesso/status", { cache: "no-store" });
+      const data = await res.json();
+      if (!data.valid) {
+        window.location.href = "/acessar?encerrado=1";
+      }
+    } catch (e) {
+      // network hiccup, try again on the next tick
+    }
+  }
+  setInterval(checkSession, 20000);
+
+  var sairBtn = document.getElementById("sair-btn");
+  if (sairBtn) {
+    sairBtn.addEventListener("click", function (event) {
+      event.preventDefault();
+      fetch("/api/acesso/sair", { method: "POST" }).finally(function () {
+        window.location.href = "/acessar";
+      });
+    });
+  }
+})();
+</script>
+`;
 
 function denyPage(title: string, message: string, status: number) {
   const html = `<!doctype html>
@@ -35,7 +70,7 @@ function denyPage(title: string, message: string, status: number) {
   <div class="box">
     <h1>${title}</h1>
     <p>${message}</p>
-    <a href="/">Voltar para a página inicial</a>
+    <a href="/acessar">Fazer login</a>
   </div>
 </body>
 </html>`;
@@ -45,38 +80,20 @@ function denyPage(title: string, message: string, status: number) {
   });
 }
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ token: string }> }
-) {
-  const { token } = await params;
-  const order = getOrderByToken(token);
+export async function GET(_req: NextRequest) {
+  const store = await cookies();
+  const sessionId = store.get(READER_COOKIE_NAME)?.value;
+  const order = sessionId ? getOrderByActiveSession(sessionId) : undefined;
 
   if (!order) {
     return denyPage(
-      "Link inválido",
-      "Não encontramos um acesso ativo para este link. Confira o link recebido ou entre em contato com a equipe.",
-      404
+      "Faça login para ler",
+      "Sua sessão não é mais válida — pode ter expirado ou sido aberta em outro lugar. Faça login de novo com seu e-mail.",
+      401
     );
   }
 
-  if (order.status === "bloqueado") {
-    return denyPage(
-      "Acesso bloqueado",
-      "O acesso vinculado a este link foi bloqueado. Fale com a equipe se acredita que isso é um engano.",
-      403
-    );
-  }
-
-  if (order.status !== "aprovado") {
-    return denyPage(
-      "Acesso ainda não liberado",
-      "Este pedido ainda não foi aprovado. Assim que o pagamento for confirmado, o acesso será liberado.",
-      403
-    );
-  }
-
-  const html = readEbookContent();
+  const html = readEbookContent().replace("</body>", `${SESSION_WATCHER_SCRIPT}</body>`);
   return new Response(html, {
     status: 200,
     headers: {

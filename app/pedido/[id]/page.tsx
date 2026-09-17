@@ -54,10 +54,11 @@ export default async function PedidoPage({
             Pagamento confirmado
           </h2>
           <p style={{ color: "var(--muted)" }}>
-            Seu acesso individual está liberado. Guarde este link, ele é pessoal e intransferível.
+            Seu acesso está liberado. Para ler, vá até a página de acesso e informe o e-mail
+            <strong> {order.email}</strong> — vamos te enviar um código por e-mail para entrar.
           </p>
-          <Link href={`/ebook/${order.access_token}`} className="btn btn-primary">
-            Abrir minha revista digital
+          <Link href="/acessar" className="btn btn-primary">
+            Acessar minha revista digital
           </Link>
         </div>
       )}

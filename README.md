@@ -6,7 +6,8 @@ Plataforma própria para vender e entregar a revista digital "Adicional de Peric
 - cadastro do comprador (`/comprar`);
 - pagamento via Pix dinâmico gerado pelo Asaas, com liberação automática (`/pedido/[id]`);
 - painel administrativo para acompanhar pedidos e agir em casos excepcionais (`/admin`);
-- acesso individual à revista digital, por link único por comprador (`/ebook/[token]`).
+- acesso à revista digital por e-mail + código de 6 dígitos, com uma única sessão ativa por
+  vez — logar em outro lugar derruba a sessão anterior (`/acessar` e `/ler`).
 
 Este é o modelo **2 (Pix dinâmico com confirmação automática via gateway)** descrito em
 `docs/resumo-solucao-itamar-2026-09-16.md` — o cliente decidiu evoluir do modelo manual (Pix
@@ -22,12 +23,21 @@ CPF com aprovação manual) para este, usando o **Asaas** como gateway de pagame
    `/api/webhooks/asaas`. O pedido é marcado como **aprovado** e recebe um token de acesso
    individual — tudo automático, sem intervenção da equipe.
 4. A página `/pedido/[id]` fica se atualizando sozinha (poll a cada 4s) enquanto aguarda o
-   pagamento, e revela o link de acesso (`/ebook/<token>`) assim que o status muda.
-5. Se um acesso for compartilhado indevidamente, use **Bloquear acesso** no painel.
-   **Reativar acesso** gera um novo token e invalida o anterior.
-6. Se o webhook falhar por algum motivo (raro, mas pode acontecer), o pedido fica visível
-   como "Aguardando pagamento" no painel e a equipe pode clicar em **Liberar manualmente**
-   como fallback.
+   pagamento, e assim que o status muda mostra um botão para ir até `/acessar`.
+5. Em `/acessar`, o comprador digita o e-mail usado na compra. Se houver um pedido aprovado
+   para esse e-mail, chega um código de 6 dígitos por e-mail (via Resend), válido por 10
+   minutos. Ao digitar o código certo, uma sessão é criada (cookie de 30 dias) e ele é
+   levado para `/ler`.
+6. Só existe **uma sessão ativa por comprador**. Se ele (ou alguém com quem compartilhou o
+   e-mail e o código) fizer login de novo em outro aparelho, a sessão antiga é substituída
+   na hora — a página `/ler` verifica isso a cada 20s e redireciona para `/acessar` com um
+   aviso assim que percebe que não é mais a sessão válida.
+7. Se um acesso for indevido, use **Bloquear acesso** no painel — isso também encerra a
+   sessão ativa na hora. Dá pra **encerrar a sessão** sem bloquear a compra (ex.: comprador
+   trocou de celular e não consegue entrar), ou **reativar** um pedido bloqueado/expirado.
+8. Se o webhook do Asaas falhar por algum motivo (raro, mas pode acontecer), o pedido fica
+   visível como "Aguardando pagamento" no painel e a equipe pode clicar em **Liberar
+   manualmente** como fallback.
 
 ## Configurando o Asaas
 
@@ -44,12 +54,28 @@ CPF com aprovação manual) para este, usando o **Asaas** como gateway de pagame
    `ASAAS_WEBHOOK_TOKEN`, os webhooks são rejeitados (o app nega por padrão em vez de aceitar
    sem verificação).
 
+## Configurando o Resend (código de acesso por e-mail)
+
+1. Crie uma conta em [resend.com](https://resend.com) e gere uma chave de API em **API
+   Keys**. Coloque em `RESEND_API_KEY`.
+2. **Importante**: enquanto nenhum domínio estiver verificado no Resend, o remetente padrão
+   `onboarding@resend.dev` só consegue mandar e-mail para o endereço da própria conta
+   Resend — ótimo pra testar sozinho, mas não entrega para os compradores de verdade.
+3. Quando o domínio definitivo do Itamar estiver definido (ainda não é o
+   `agenciacavalheri.com.br`, segundo combinado), verifique esse domínio em **Domains** no
+   Resend (é adicionar uns registros DNS) e troque `RESEND_FROM_EMAIL` para algo como
+   `"Honestamente, Itamar <acesso@dominio-do-itamar.com.br>"`. Isso não exige nenhuma
+   mudança de código — só a variável de ambiente.
+4. Sem `RESEND_API_KEY`, o pedido de código falha silenciosamente (o comprador não recebe
+   e-mail, mas a resposta continua genérica por segurança) — configure antes de divulgar.
+
 ## Rodando localmente
 
 ```bash
 npm install
 cp .env.example .env
-# edite o .env com a senha do painel, a chave de API do Asaas (sandbox) e o token do webhook
+# edite o .env com a senha do painel, a chave de API do Asaas (sandbox), o token do webhook
+# e a chave do Resend
 npm run dev
 ```
 
@@ -120,27 +146,29 @@ por um banco gerenciado (Postgres, Turso, etc.) — o acesso ao banco está isol
 O conteúdo do e-book (`content/adicional-periculosidade.html`) foi portado da versão HTML
 já validada anteriormente para o projeto (ver `docs/revista-digital-itamar-referencia.html`
 e `docs/MAPA-site-revista.md`), removendo a tela de senha única em favor da checagem de
-token individual feita em `app/ebook/[token]/route.ts`. Layout, calculadora, busca e
-navegação por capítulos foram preservados.
+sessão feita em `app/ler/route.ts`. Layout, calculadora, busca e navegação por capítulos
+foram preservados.
 
-## Segurança do acesso individual
+## Segurança do acesso
 
-- Cada comprador aprovado recebe um token aleatório de 48 caracteres — o link não é
-  adivinhável.
-- O painel permite bloquear (revogar) e reativar (gerar novo token, invalidando o antigo)
-  o acesso de qualquer comprador, para lidar com compartilhamento indevido.
+- O login usa e-mail + código de 6 dígitos (hash guardado no banco, nunca o código em
+  texto puro), válido por 10 minutos, com limite de 5 tentativas erradas por código e
+  limite de pedidos de código por e-mail (evita força bruta e spam de e-mails).
+- Só existe uma sessão ativa por comprador: fazer login em outro lugar substitui a sessão
+  anterior na hora, e a leitura em andamento detecta isso em até 20 segundos e pede login
+  de novo — é o mecanismo contra compartilhamento de acesso.
+- O painel permite bloquear (revoga a compra e encerra a sessão), encerrar sessão (sem
+  bloquear a compra) e reativar acesso de qualquer comprador.
 - O webhook do Asaas só é aceito com o cabeçalho `asaas-access-token` correto — sem isso,
   qualquer chamada é rejeitada com 401, então ninguém consegue "aprovar" um pedido forjando
   uma notificação.
-- Ainda não há limite de dispositivos simultâneos nem expiração automática de sessão —
-  ambos estão listados como evolução futura no resumo de solução.
 
 ## Próximos passos sugeridos
 
-- Enviar automaticamente o link de acesso por e-mail/WhatsApp assim que o pagamento for
-  confirmado (hoje o comprador só vê o link na própria página `/pedido/[id]`).
 - Páginas de campanha específicas por anúncio (Meta Ads / Google Ads) com parâmetros de
   rastreamento, conforme `docs/resumo-solucao-itamar-2026-09-16.md`.
+- Quando o domínio definitivo do Itamar estiver definido, migrar o `RESEND_FROM_EMAIL` (e
+  possivelmente o próprio deploy) para esse domínio.
 
 ## Documentação de referência
 

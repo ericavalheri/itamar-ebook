@@ -33,14 +33,28 @@ function createConnection() {
       pix_qr_base64 TEXT,
       pix_copia_cola TEXT,
       pix_expiracao TEXT,
-      access_token TEXT UNIQUE,
+      active_session_id TEXT,
+      active_session_created_at TEXT,
       admin_nota TEXT,
       created_at TEXT NOT NULL,
       pago_at TEXT
     );
     CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
-    CREATE INDEX IF NOT EXISTS idx_orders_access_token ON orders(access_token);
+    CREATE INDEX IF NOT EXISTS idx_orders_email ON orders(email);
     CREATE INDEX IF NOT EXISTS idx_orders_asaas_payment_id ON orders(asaas_payment_id);
+    CREATE INDEX IF NOT EXISTS idx_orders_active_session_id ON orders(active_session_id);
+
+    CREATE TABLE IF NOT EXISTS otp_codes (
+      id TEXT PRIMARY KEY,
+      order_id TEXT NOT NULL,
+      email TEXT NOT NULL,
+      code_hash TEXT NOT NULL,
+      attempts INTEGER NOT NULL DEFAULT 0,
+      expires_at TEXT NOT NULL,
+      consumed_at TEXT,
+      created_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_otp_codes_email ON otp_codes(email);
   `);
   return db;
 }
@@ -73,8 +87,20 @@ export interface Order {
   pix_qr_base64: string | null;
   pix_copia_cola: string | null;
   pix_expiracao: string | null;
-  access_token: string | null;
+  active_session_id: string | null;
+  active_session_created_at: string | null;
   admin_nota: string | null;
   created_at: string;
   pago_at: string | null;
+}
+
+export interface OtpCode {
+  id: string;
+  order_id: string;
+  email: string;
+  code_hash: string;
+  attempts: number;
+  expires_at: string;
+  consumed_at: string | null;
+  created_at: string;
 }
