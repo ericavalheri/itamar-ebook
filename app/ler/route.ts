@@ -3,17 +3,20 @@ import { cookies } from "next/headers";
 import fs from "node:fs";
 import path from "node:path";
 import { getOrderByActiveSession } from "@/lib/orders";
+import { getProductBySlug } from "@/lib/products";
 import { READER_COOKIE_NAME } from "@/lib/reader-session";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-let cachedContent: string | null = null;
-function readEbookContent() {
-  if (cachedContent) return cachedContent;
-  const filePath = path.join(process.cwd(), "content", "adicional-periculosidade.html");
-  cachedContent = fs.readFileSync(filePath, "utf8");
-  return cachedContent;
+const contentCache = new Map<string, string>();
+function readEbookContent(contentFile: string) {
+  const cached = contentCache.get(contentFile);
+  if (cached) return cached;
+  const filePath = path.join(process.cwd(), "content", contentFile);
+  const html = fs.readFileSync(filePath, "utf8");
+  contentCache.set(contentFile, html);
+  return html;
 }
 
 // Polls the session while the reader is open and kicks the buyer back to
@@ -93,7 +96,19 @@ export async function GET(_req: NextRequest) {
     );
   }
 
-  const html = readEbookContent().replace("</body>", `${SESSION_WATCHER_SCRIPT}</body>`);
+  const product = getProductBySlug(order.produto);
+  if (!product) {
+    return denyPage(
+      "E-book indisponível",
+      "Não encontramos o conteúdo deste e-book no momento. Fale com a equipe.",
+      404
+    );
+  }
+
+  const html = readEbookContent(product.contentFile).replace(
+    "</body>",
+    `${SESSION_WATCHER_SCRIPT}</body>`
+  );
   return new Response(html, {
     status: 200,
     headers: {

@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { createOrder, EBOOK_PRICE_CENTAVOS } from "@/lib/orders";
+import { createOrder } from "@/lib/orders";
+import { getProductBySlug } from "@/lib/products";
 import { isValidCPF, onlyDigits } from "@/lib/cpf";
 import { findOrCreateCustomer, createPixCharge, getPixQrCode, AsaasError } from "@/lib/asaas";
 
@@ -18,7 +19,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Corpo inválido." }, { status: 400 });
   }
 
-  const { nome, email, telefone, estado, cpf } = (body ?? {}) as Record<string, unknown>;
+  const { produto, nome, email, telefone, estado, cpf } = (body ?? {}) as Record<string, unknown>;
+
+  const product = typeof produto === "string" ? getProductBySlug(produto) : undefined;
+  if (!product) {
+    return NextResponse.json({ error: "E-book não encontrado." }, { status: 404 });
+  }
 
   if (
     typeof nome !== "string" || nome.trim().length < 3 ||
@@ -50,8 +56,8 @@ export async function POST(req: NextRequest) {
 
     const payment = await createPixCharge({
       customerId: customer.id,
-      valueCentavos: EBOOK_PRICE_CENTAVOS,
-      description: "E-book Adicional de Periculosidade",
+      valueCentavos: product.precoCentavos,
+      description: `E-book ${product.titulo}`,
       externalReference: id,
     });
 
@@ -59,12 +65,13 @@ export async function POST(req: NextRequest) {
 
     const order = createOrder({
       id,
+      produto: product.slug,
       nome: nomeTrim,
       email: emailTrim,
       telefone: telefoneTrim,
       estado: estado.trim().toUpperCase(),
       cpf: cpfDigits,
-      valorCentavos: EBOOK_PRICE_CENTAVOS,
+      valorCentavos: product.precoCentavos,
       asaasCustomerId: customer.id,
       asaasPaymentId: payment.id,
       pixQrBase64: qrCode.encodedImage,

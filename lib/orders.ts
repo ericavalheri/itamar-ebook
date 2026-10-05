@@ -1,10 +1,11 @@
 import { randomUUID } from "node:crypto";
 import { db, Order } from "./db";
 
-export { EBOOK_PRICE_CENTAVOS, formatMoney, STATUS_LABEL } from "./money";
+export { formatMoney, STATUS_LABEL } from "./money";
 
 export interface NewOrderInput {
   id: string;
+  produto: string;
   nome: string;
   email: string;
   telefone: string;
@@ -23,16 +24,17 @@ export function createOrder(input: NewOrderInput): Order {
   const now = new Date().toISOString();
   db.prepare(
     `INSERT INTO orders (
-       id, nome, email, telefone, estado, cpf, valor_centavos, status,
+       id, produto, nome, email, telefone, estado, cpf, valor_centavos, status,
        asaas_customer_id, asaas_payment_id, pix_qr_base64, pix_copia_cola, pix_expiracao,
        created_at
      ) VALUES (
-       @id, @nome, @email, @telefone, @estado, @cpf, @valorCentavos, 'aguardando_pagamento',
+       @id, @produto, @nome, @email, @telefone, @estado, @cpf, @valorCentavos, 'aguardando_pagamento',
        @asaasCustomerId, @asaasPaymentId, @pixQrBase64, @pixCopiaCola, @pixExpiracao,
        @createdAt
      )`
   ).run({
     id,
+    produto: input.produto,
     nome: input.nome,
     email: input.email,
     telefone: input.telefone,
@@ -47,6 +49,44 @@ export function createOrder(input: NewOrderInput): Order {
     createdAt: now,
   });
   return getOrderById(id)!;
+}
+
+export interface NewManualOrderInput {
+  id: string;
+  produto: string;
+  nome: string;
+  email: string;
+  telefone: string;
+  estado: string;
+  cpf: string;
+  valorCentavos: number;
+}
+
+/** Creates an already-approved order without touching Asaas at all — the
+ * fallback for while we don't have the client's Asaas credentials yet, or
+ * for any buyer who paid outside the automated flow. */
+export function createManualOrder(input: NewManualOrderInput): Order {
+  const now = new Date().toISOString();
+  db.prepare(
+    `INSERT INTO orders (
+       id, produto, nome, email, telefone, estado, cpf, valor_centavos, status,
+       created_at, pago_at
+     ) VALUES (
+       @id, @produto, @nome, @email, @telefone, @estado, @cpf, @valorCentavos, 'aprovado',
+       @createdAt, @createdAt
+     )`
+  ).run({
+    id: input.id,
+    produto: input.produto,
+    nome: input.nome,
+    email: input.email,
+    telefone: input.telefone,
+    estado: input.estado,
+    cpf: input.cpf,
+    valorCentavos: input.valorCentavos,
+    createdAt: now,
+  });
+  return getOrderById(input.id)!;
 }
 
 export function getOrderById(id: string): Order | undefined {

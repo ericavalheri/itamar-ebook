@@ -1,6 +1,8 @@
 import { listOrders } from "@/lib/orders";
+import { PRODUCTS } from "@/lib/products";
 import OrdersTable from "./OrdersTable";
 import LogoutButton from "./LogoutButton";
+import ManualOrderForm from "./ManualOrderForm";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +25,10 @@ export default function AdminDashboardPage() {
         </div>
         <LogoutButton />
       </div>
-      <div className="card" style={{ padding: 20, marginTop: 24 }}>
+      <div style={{ marginTop: 24 }}>
+        <ManualOrderForm products={PRODUCTS} />
+      </div>
+      <div className="card" style={{ padding: 20, marginTop: 20 }}>
         <OrdersTable orders={orders} />
       </div>
     </main>

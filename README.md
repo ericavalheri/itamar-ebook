@@ -1,11 +1,14 @@
 # Itamar E-book — Plataforma de Venda
 
-Plataforma própria para vender e entregar a revista digital "Adicional de Periculosidade" com:
+Plataforma própria para vender e entregar e-books em formato de revista digital, pensada
+como uma **biblioteca**: hoje tem um título ("Adicional de Periculosidade"), mas a estrutura
+já suporta vários e-books à venda ao mesmo tempo. Inclui:
 
-- página de vendas (`/`);
-- cadastro do comprador (`/comprar`);
+- biblioteca/catálogo (`/`) com uma página de vendas por título (`/livros/[slug]`);
+- cadastro do comprador por e-book (`/comprar/[slug]`);
 - pagamento via Pix dinâmico gerado pelo Asaas, com liberação automática (`/pedido/[id]`);
-- painel administrativo para acompanhar pedidos e agir em casos excepcionais (`/admin`);
+- painel administrativo para acompanhar pedidos, agir em casos excepcionais, e **liberar
+  acesso manualmente sem depender do Asaas** (`/admin`);
 - acesso à revista digital por e-mail + código de 6 dígitos, com uma única sessão ativa por
   vez — logar em outro lugar derruba a sessão anterior (`/acessar` e `/ler`).
 
@@ -13,12 +16,24 @@ Este é o modelo **2 (Pix dinâmico com confirmação automática via gateway)**
 `docs/resumo-solucao-itamar-2026-09-16.md` — o cliente decidiu evoluir do modelo manual (Pix
 CPF com aprovação manual) para este, usando o **Asaas** como gateway de pagamento.
 
+## A biblioteca de e-books
+
+Os títulos à venda ficam listados em `lib/products.ts` — cada entrada tem um `slug`, preço,
+descrição e o arquivo HTML em `content/` com o conteúdo da revista digital. A home (`/`)
+lista todos como uma biblioteca; `/livros/[slug]` é a página de vendas de cada um;
+`/comprar/[slug]` é o cadastro+checkout daquele título específico; e o pedido guarda qual
+produto foi comprado (`orders.produto`), usado depois para liberar o e-book certo em `/ler`.
+
+**Para publicar um novo e-book**: adicione uma entrada em `lib/products.ts` e o arquivo HTML
+correspondente em `content/`. Não precisa mexer em mais nada — cadastro, Pix, painel e leitor
+já funcionam para qualquer título da lista.
+
 ## Fluxo de venda
 
-1. O comprador se cadastra em `/comprar` (nome, e-mail, telefone, estado, CPF).
+1. O comprador se cadastra em `/comprar/[slug]` (nome, e-mail, telefone, estado, CPF).
 2. No cadastro, o backend cria/reaproveita um cliente no Asaas e gera uma cobrança Pix
-   (`billingType: PIX`). O comprador é levado para `/pedido/[id]`, que mostra o **QR Code**
-   e o código **copia e cola**.
+   (`billingType: PIX`) no valor daquele título específico. O comprador é levado para
+   `/pedido/[id]`, que mostra o **QR Code** e o código **copia e cola**.
 3. Assim que o Pix é pago, o Asaas confirma quase instantaneamente e envia um webhook para
    `/api/webhooks/asaas`. O pedido é marcado como **aprovado** e recebe um token de acesso
    individual — tudo automático, sem intervenção da equipe.
@@ -38,6 +53,13 @@ CPF com aprovação manual) para este, usando o **Asaas** como gateway de pagame
 8. Se o webhook do Asaas falhar por algum motivo (raro, mas pode acontecer), o pedido fica
    visível como "Aguardando pagamento" no painel e a equipe pode clicar em **Liberar
    manualmente** como fallback.
+9. **Enquanto não temos a conta Asaas do cliente configurada**, o cadastro público
+   (`/comprar/[slug]`) não funciona, porque depende da API do Asaas para gerar o Pix. Nesse
+   meio tempo, o painel tem o botão **"+ Adicionar comprador manualmente"**: a equipe recebe
+   o pagamento por fora (Pix direto, combinado por WhatsApp etc.) e cadastra o comprador ali
+   — nome, e-mail e qual e-book, o resto é opcional. O pedido entra direto como **aprovado**,
+   sem tocar no Asaas, e o comprador já consegue logar normalmente em `/acessar` com aquele
+   e-mail. É a mesma lógica usada pelo botão "Liberar manualmente".
 
 ## Configurando o Asaas
 
@@ -101,8 +123,8 @@ da Hostinger), não hospedagem PHP simples.
    `claude/itamar-ebooks-sales-platform-n34b48` ou a branch que for usar em produção), ou via
    FTP/File Manager se preferir enviar os arquivos manualmente.
 3. **Variáveis de ambiente**: no painel Node.js tem uma seção de variáveis — preencha com os
-   mesmos nomes do `.env.example` (`ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`,
-   `EBOOK_PRICE_CENTAVOS`, `ASAAS_API_KEY`, `ASAAS_ENV=production`, `ASAAS_WEBHOOK_TOKEN`),
+   mesmos nomes do `.env.example` (`ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`, `ASAAS_API_KEY`,
+   `ASAAS_ENV=production`, `ASAAS_WEBHOOK_TOKEN`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`),
    com valores reais — nunca os de teste usados durante o desenvolvimento.
 4. **Instalar dependências**: use o botão "Executar comando NPM install" do painel (ou, se
    tiver acesso SSH, `npm install` manualmente na pasta da aplicação).
@@ -126,8 +148,9 @@ avise: nesse caso trocamos o SQLite por uma alternativa sem compilação nativa.
 ## Variáveis de ambiente
 
 Veja `.env.example`. As obrigatórias são `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`,
-`ASAAS_API_KEY` e `ASAAS_WEBHOOK_TOKEN`. `EBOOK_PRICE_CENTAVOS` deve ser ajustado com o
-preço real antes de divulgar a página.
+`ASAAS_API_KEY` e `ASAAS_WEBHOOK_TOKEN` (para a venda automática) e `RESEND_API_KEY` (para o
+login por e-mail funcionar). Preço não é mais uma variável de ambiente — cada e-book tem o
+seu, definido em `lib/products.ts`.
 
 ## Dados e armazenamento
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getOrderById, STATUS_LABEL, formatMoney } from "@/lib/orders";
+import { getProductBySlug } from "@/lib/products";
 import CopyPixCode from "./CopyPixCode";
 import PixStatusWatcher from "./PixStatusWatcher";
 
@@ -14,12 +15,13 @@ export default async function PedidoPage({
   const { id } = await params;
   const order = getOrderById(id);
   if (!order) notFound();
+  const product = getProductBySlug(order.produto);
 
   return (
     <main className="container" style={{ padding: "48px 20px 80px" }}>
       <PixStatusWatcher orderId={order.id} status={order.status} />
       <span className="label">Seu pedido</span>
-      <h1 style={{ margin: "12px 0 6px" }}>Adicional de Periculosidade</h1>
+      <h1 style={{ margin: "12px 0 6px" }}>{product?.titulo || order.produto}</h1>
       <p style={{ color: "var(--muted)", marginBottom: 20 }}>
         Pedido de {order.nome} · <span className={`status-pill status-${order.status}`}>{STATUS_LABEL[order.status]}</span>
       </p>
@@ -71,7 +73,7 @@ export default async function PedidoPage({
           <p style={{ color: "var(--muted)" }}>
             Não identificamos o pagamento a tempo. Faça um novo pedido para gerar um Pix atualizado.
           </p>
-          <Link href="/comprar" className="btn btn-primary">
+          <Link href={`/comprar/${order.produto}`} className="btn btn-primary">
             Gerar novo pedido
           </Link>
         </div>

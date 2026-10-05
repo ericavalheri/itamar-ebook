@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Order } from "@/lib/db";
 import { STATUS_LABEL, formatMoney } from "@/lib/money";
+import { getProductBySlug } from "@/lib/products";
 
 function useOrderAction() {
   const router = useRouter();
@@ -74,6 +75,7 @@ export default function OrdersTable({ orders }: { orders: Order[] }) {
         <thead>
           <tr>
             <th>Comprador</th>
+            <th>E-book</th>
             <th>Contato</th>
             <th>UF</th>
             <th>Valor</th>
@@ -93,6 +95,7 @@ export default function OrdersTable({ orders }: { orders: Order[] }) {
                     {new Date(order.created_at).toLocaleString("pt-BR")}
                   </div>
                 </td>
+                <td>{getProductBySlug(order.produto)?.titulo || order.produto}</td>
                 <td>
                   <div>{order.email}</div>
                   <div style={{ color: "var(--muted)" }}>{order.telefone}</div>

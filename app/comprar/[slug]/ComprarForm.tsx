@@ -9,7 +9,7 @@ const ESTADOS = [
   "SP", "SE", "TO",
 ];
 
-export default function ComprarForm() {
+export default function ComprarForm({ produto }: { produto: string }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -20,6 +20,7 @@ export default function ComprarForm() {
     setLoading(true);
     const form = new FormData(event.currentTarget);
     const body = {
+      produto,
       nome: String(form.get("nome") || "").trim(),
       email: String(form.get("email") || "").trim(),
       telefone: String(form.get("telefone") || "").trim(),
