@@ -1,7 +1,7 @@
 import type { OrderStatus } from "./db";
 
 export const EBOOK_PRICE_CENTAVOS = Number(
-  process.env.EBOOK_PRICE_CENTAVOS || 2990
+  process.env.EBOOK_PRICE_CENTAVOS || 3800
 );
 
 export function formatMoney(centavos: number) {
