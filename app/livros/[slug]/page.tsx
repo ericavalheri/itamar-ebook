@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProductBySlug } from "@/lib/products";
 import { formatMoney } from "@/lib/money";
+import { ICONS } from "@/components/icons";
+import BookCover from "@/components/BookCover";
 
 export default async function LivroPage({
   params,
@@ -16,49 +18,71 @@ export default async function LivroPage({
     <main>
       <section
         style={{
-          background: "linear-gradient(160deg, #111d2f 0%, #0c6661 62%, #c77842 130%)",
+          background: "linear-gradient(155deg, #111d2f 0%, #0c6661 58%, #c77842 130%)",
           color: "#fffaf1",
+          position: "relative",
+          overflow: "hidden",
         }}
       >
-        <div className="container" style={{ padding: "64px 20px 84px" }}>
-          <span
-            className="label"
-            style={{ color: "#f6df9d", borderColor: "rgba(230,196,106,0.44)", background: "transparent" }}
-          >
-            {product.serie}
-          </span>
-          <h1 style={{ fontSize: "clamp(2.4rem, 5vw, 3.6rem)", lineHeight: 1.05, margin: "18px 0 16px", maxWidth: 720 }}>
-            {product.titulo}: {product.subtitulo}
-          </h1>
-          <p style={{ fontSize: "1.15rem", maxWidth: 620, opacity: 0.92, marginBottom: 32 }}>
-            {product.descricaoCurta}
-          </p>
-          <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
-            <Link href={`/comprar/${product.slug}`} className="btn btn-primary">
-              Quero o e-book — {formatMoney(product.precoCentavos)}
-            </Link>
-            <span style={{ fontSize: "0.9rem", opacity: 0.85 }}>
-              Acesso liberado após confirmação do pagamento via Pix
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage:
+              "repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 56px)",
+          }}
+        />
+        <div className="container livro-hero" style={{ position: "relative", padding: "48px 20px 56px" }}>
+          <div>
+            <span
+              className="label"
+              style={{ color: "#f6df9d", borderColor: "rgba(230,196,106,0.44)", background: "transparent" }}
+            >
+              {product.serie}
             </span>
+            <h1 style={{ fontSize: "clamp(2.1rem, 4.2vw, 3.1rem)", lineHeight: 1.08, margin: "16px 0 14px" }}>
+              {product.titulo}: {product.subtitulo}
+            </h1>
+            <p style={{ fontSize: "1.08rem", maxWidth: 560, opacity: 0.92, marginBottom: 28 }}>
+              {product.descricaoCurta}
+            </p>
+            <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
+              <Link href={`/comprar/${product.slug}`} className="btn btn-primary">
+                Quero o e-book — {formatMoney(product.precoCentavos)}
+              </Link>
+              <span style={{ fontSize: "0.88rem", opacity: 0.85 }}>
+                Acesso liberado após confirmação do pagamento via Pix
+              </span>
+            </div>
+          </div>
+          <div className="livro-hero-cover">
+            <BookCover serie={product.serie} titulo={product.titulo} titleSize="1.6rem" />
           </div>
         </div>
       </section>
 
       <section className="container" style={{ padding: "56px 20px" }}>
-        <h2 style={{ fontSize: "1.7rem", marginBottom: 24 }}>O que você recebe</h2>
+        <h2 style={{ fontSize: "1.6rem", marginBottom: 24 }}>O que você recebe</h2>
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))",
             gap: 18,
           }}
         >
-          {product.recursos.map((item) => (
-            <div key={item.titulo} className="card" style={{ padding: 20 }}>
-              <strong style={{ display: "block", marginBottom: 8 }}>{item.titulo}</strong>
-              <span style={{ color: "var(--muted)", fontSize: "0.94rem" }}>{item.texto}</span>
-            </div>
-          ))}
+          {product.recursos.map((item) => {
+            const Icon = ICONS[item.icon];
+            return (
+              <div key={item.titulo} className="card" style={{ padding: 20 }}>
+                <div className="icon-badge" style={{ marginBottom: 14 }}>
+                  <Icon size={20} />
+                </div>
+                <strong style={{ display: "block", marginBottom: 6 }}>{item.titulo}</strong>
+                <span style={{ color: "var(--muted)", fontSize: "0.92rem", lineHeight: 1.5 }}>{item.texto}</span>
+              </div>
+            );
+          })}
         </div>
       </section>
 

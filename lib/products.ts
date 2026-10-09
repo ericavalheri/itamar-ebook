@@ -1,3 +1,5 @@
+import type { IconName } from "@/components/icons";
+
 export interface Product {
   slug: string;
   serie: string;
@@ -6,7 +8,7 @@ export interface Product {
   descricaoCurta: string;
   precoCentavos: number;
   contentFile: string;
-  recursos: { titulo: string; texto: string }[];
+  recursos: { icon: IconName; titulo: string; texto: string }[];
 }
 
 // Biblioteca de e-books à venda. Para colocar um novo título no ar: adicione
@@ -22,12 +24,12 @@ export const PRODUCTS: Product[] = [
     precoCentavos: 3800,
     contentFile: "adicional-periculosidade.html",
     recursos: [
-      { titulo: "Base legal explicada", texto: "CLT, NR-16 e súmulas do TST traduzidas em linguagem simples." },
-      { titulo: "Calculadora integrada", texto: "Simule o valor do adicional e das horas extras com o seu salário." },
-      { titulo: "Modelo de holerite", texto: "Veja como a verba deve aparecer no contracheque, com exemplo real." },
-      { titulo: "Roteiro de conferência", texto: "Cinco passos para checar se o pagamento está correto." },
-      { titulo: "Leitura por capítulos", texto: "Navegação, busca e progresso de leitura no celular ou no computador." },
-      { titulo: "Acesso individual", texto: "Login por e-mail e código, com uma sessão só por vez." },
+      { icon: "scale", titulo: "Base legal explicada", texto: "CLT, NR-16 e súmulas do TST traduzidas em linguagem simples." },
+      { icon: "calculator", titulo: "Calculadora integrada", texto: "Simule o valor do adicional e das horas extras com o seu salário." },
+      { icon: "receipt", titulo: "Modelo de holerite", texto: "Veja como a verba deve aparecer no contracheque, com exemplo real." },
+      { icon: "checklist", titulo: "Roteiro de conferência", texto: "Cinco passos para checar se o pagamento está correto." },
+      { icon: "book", titulo: "Leitura por capítulos", texto: "Navegação, busca e progresso de leitura no celular ou no computador." },
+      { icon: "shield", titulo: "Acesso individual", texto: "Login por e-mail e código, com uma sessão só por vez." },
     ],
   },
 ];

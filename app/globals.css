@@ -81,6 +81,110 @@ a {
   box-shadow: 0 18px 50px rgba(10, 20, 34, 0.1);
 }
 
+.card-link {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.card-link:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 60px rgba(10, 20, 34, 0.16);
+}
+
+.icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(12, 102, 97, 0.1);
+  color: var(--petrol);
+  flex: 0 0 auto;
+}
+
+.book-cover {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  background: linear-gradient(155deg, #111d2f 0%, #0c6661 58%, #c77842 130%);
+  color: #fffaf1;
+  box-shadow: 0 24px 60px rgba(10, 20, 34, 0.28);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.book-cover::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 28px);
+  pointer-events: none;
+}
+
+.book-cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 85% 8%, rgba(230, 196, 106, 0.3), transparent 55%);
+  pointer-events: none;
+}
+
+.book-cover-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  padding: 20px;
+}
+
+.book-cover-serie {
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #f6df9d;
+  opacity: 0.9;
+}
+
+.book-cover-rule {
+  width: 34px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--gold);
+  margin: 10px 0 12px;
+}
+
+.book-cover-titulo {
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.livro-hero {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  align-items: center;
+}
+
+.livro-hero-cover {
+  max-width: 220px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+@media (min-width: 760px) {
+  .livro-hero {
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 40px;
+  }
+  .livro-hero-cover {
+    max-width: 280px;
+  }
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
