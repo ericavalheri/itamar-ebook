@@ -4,39 +4,45 @@ import { formatMoney } from "@/lib/money";
 import BookCover from "@/components/BookCover";
 
 export default function BibliotecaPage() {
+  const destaque = PRODUCTS[0];
+
   return (
     <main>
-      <section
-        style={{
-          background: "linear-gradient(155deg, #111d2f 0%, #0c6661 58%, #c77842 130%)",
-          color: "#fffaf1",
-          position: "relative",
-          overflow: "hidden",
-        }}
-      >
+      <section style={{ background: "var(--sand)" }}>
         <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            inset: 0,
-            backgroundImage:
-              "repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 56px)",
-          }}
-        />
-        <div className="container" style={{ padding: "64px 20px 72px", position: "relative" }}>
-          <span
-            className="label"
-            style={{ color: "#f6df9d", borderColor: "rgba(230,196,106,0.44)", background: "transparent" }}
-          >
-            Honestamente, Itamar
-          </span>
-          <h1 style={{ fontSize: "clamp(2.2rem, 4.5vw, 3.2rem)", lineHeight: 1.1, margin: "16px 0 12px", maxWidth: 680 }}>
-            Biblioteca de e-books sobre direitos trabalhistas
-          </h1>
-          <p style={{ fontSize: "1.08rem", maxWidth: 580, opacity: 0.92 }}>
-            Revistas digitais interativas, com base legal, calculadoras e exemplos práticos
-            para você entender e conferir os seus direitos.
-          </p>
+          className="container livro-hero"
+          style={{ padding: "56px 20px 64px" }}
+        >
+          <div>
+            <span className="label">Honestamente, Itamar</span>
+            <h1
+              className="font-display"
+              style={{ fontSize: "clamp(2.1rem, 4.2vw, 3rem)", lineHeight: 1.12, margin: "18px 0 14px", color: "var(--navy)" }}
+            >
+              Biblioteca de e-books sobre direitos trabalhistas
+            </h1>
+            <p style={{ fontSize: "1.05rem", maxWidth: 520, color: "var(--muted)", marginBottom: 0 }}>
+              Revistas digitais interativas, com base legal, calculadoras e exemplos práticos
+              para você entender e conferir os seus direitos.
+            </p>
+          </div>
+          {destaque && (
+            <div style={{ position: "relative" }}>
+              <div
+                aria-hidden
+                style={{
+                  position: "absolute",
+                  inset: "-10%",
+                  borderRadius: "50%",
+                  background: "radial-gradient(circle, rgba(12,102,97,0.14), transparent 70%)",
+                  zIndex: 0,
+                }}
+              />
+              <div className="livro-hero-cover" style={{ position: "relative", zIndex: 1 }}>
+                <BookCover serie={destaque.serie} titulo={destaque.titulo} />
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -57,7 +63,9 @@ export default function BibliotecaPage() {
             >
               <BookCover serie={product.serie} titulo={product.titulo} />
               <div style={{ padding: "18px 18px 20px" }}>
-                <h2 style={{ fontSize: "1.1rem", margin: "0 0 8px" }}>{product.titulo}</h2>
+                <h2 className="font-display" style={{ fontSize: "1.1rem", margin: "0 0 8px", color: "var(--navy)" }}>
+                  {product.titulo}
+                </h2>
                 <p style={{ color: "var(--muted)", fontSize: "0.88rem", margin: "0 0 16px", lineHeight: 1.5 }}>
                   {product.descricaoCurta}
                 </p>
