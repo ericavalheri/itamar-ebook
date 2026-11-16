@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { readerLoginConfigured } from "@/lib/sales";
 import AcessarForm from "./AcessarForm";
 
 export default async function AcessarPage({
@@ -5,6 +7,13 @@ export default async function AcessarPage({
 }: {
   searchParams: Promise<{ encerrado?: string }>;
 }) {
+  if (!readerLoginConfigured()) {
+    return <main className="container" style={{ padding: "48px 20px 80px" }}>
+      <h1>Acesso em preparação</h1>
+      <p>O acesso por e-mail será disponibilizado após a configuração e validação do lançamento.</p>
+      <Link href="/">Voltar para a biblioteca</Link>
+    </main>;
+  }
   const { encerrado } = await searchParams;
 
   return (

@@ -1,3 +1,4 @@
+import { salesEnabled } from "@/lib/sales";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProductBySlug } from "@/lib/products";
@@ -13,6 +14,8 @@ export default async function LivroPage({
   const { slug } = await params;
   const product = getProductBySlug(slug);
   if (!product) notFound();
+
+  const canBuy = salesEnabled();
 
   return (
     <main>
@@ -30,11 +33,15 @@ export default async function LivroPage({
               {product.descricaoCurta}
             </p>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
-              <Link href={`/comprar/${product.slug}`} className="btn btn-primary">
-                Quero o e-book — {formatMoney(product.precoCentavos)}
-              </Link>
+              {canBuy ? (
+                <Link href={`/comprar/${product.slug}`} className="btn btn-primary">
+                  Quero o e-book — {formatMoney(product.precoCentavos)}
+                </Link>
+              ) : (
+                <span className="btn" aria-disabled="true">Vendas em breve — {formatMoney(product.precoCentavos)}</span>
+              )}
               <span style={{ fontSize: "0.86rem", color: "var(--muted)" }}>
-                Acesso liberado após confirmação do pagamento via Pix
+                {canBuy ? "Acesso liberado após confirmação do pagamento via Pix" : "Catálogo em pré-lançamento. Nenhum pagamento está sendo recebido."}
               </span>
             </div>
           </div>
@@ -82,7 +89,7 @@ export default async function LivroPage({
         </div>
       </section>
 
-      <section className="container" style={{ padding: "0 20px 64px" }}>
+      {canBuy && <section className="container" style={{ padding: "0 20px 64px" }}>
         <div className="card" style={{ padding: 28, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
           <div>
             <span className="label">Como funciona a compra</span>
@@ -98,7 +105,7 @@ export default async function LivroPage({
             Começar meu cadastro
           </Link>
         </div>
-      </section>
+      </section>}
 
       <div className="container" style={{ padding: "0 20px 48px" }}>
         <Link href="/" style={{ fontSize: "0.9rem", color: "var(--muted)" }}>

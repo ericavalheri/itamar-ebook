@@ -1,3 +1,5 @@
+import { salesEnabled, PREVIEW_MESSAGE } from "@/lib/sales";
+export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
@@ -29,7 +31,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR" className={`${fraunces.variable} ${inter.variable}`}>
-      <body>{children}</body>
+      <body>
+        {!salesEnabled() && (
+          <aside aria-label="Status do lançamento" style={{ padding: "14px 20px", background: "#111d2f", color: "#fffaf1", textAlign: "center", fontSize: "0.9rem" }}>
+            {PREVIEW_MESSAGE}
+          </aside>
+        )}
+        {children}
+      </body>
     </html>
   );
 }
