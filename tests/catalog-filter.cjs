@@ -1,0 +1,12 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const ts = require('typescript');
+const fs = require('node:fs');
+const code=ts.transpileModule(fs.readFileSync('components/catalog-filter.ts','utf8'), {compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText;
+const api={};new Function('exports',code)(api);
+const products=[{titulo:'Adicional de Periculosidade',serie:'Série Verbas Trabalhistas · Volume 01'}, {titulo:'Férias',serie:'Série Verbas Trabalhistas · Volume 02'}, {titulo:'Exemplo',serie:'Outra série'}];
+test('normalization handles accents, casing, whitespace',()=>assert.equal(api.normalizeSearch('  FÉRIAS  '),'ferias'));
+test('title search ignores accents and casing',()=>assert.deepEqual(api.filterCatalog(products,'FERIAS',''),[products[1]]));
+test('series groups volumes from real product labels',()=>{assert.equal(api.seriesName(products[0].serie),'Série Verbas Trabalhistas');assert.equal(api.filterCatalog(products,'','Série Verbas Trabalhistas').length,2)});
+test('search and series filters compose',()=>assert.deepEqual(api.filterCatalog(products,'adicional','Outra série'),[]));
+test('empty results and reset do not invent items',()=>{assert.equal(api.filterCatalog(products,'unknown','').length,0);assert.deepEqual(api.filterCatalog(products,'',''),products);assert.deepEqual(api.filterCatalog([],'',''),[])});
