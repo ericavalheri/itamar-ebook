@@ -131,6 +131,18 @@ a {
   pointer-events: none;
 }
 
+/* Original editorial illustration; typography stays selectable and accessible. */
+.book-cover-periculosidade {
+  background-color: #0b2032;
+  background-image: url("/images/periculosidade-editorial.webp");
+  background-size: cover;
+  background-position: center;
+}
+
+.book-cover-periculosidade .book-cover-titulo {
+  text-shadow: 0 1px 8px rgba(5, 19, 31, 0.65);
+}
+
 .book-cover-content {
   position: relative;
   z-index: 1;

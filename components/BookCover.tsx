@@ -10,7 +10,10 @@ export default function BookCover({
   titleSize?: string;
 }) {
   return (
-    <div className="book-cover" style={{ aspectRatio }}>
+    <div
+      className={`book-cover${titulo === "Adicional de Periculosidade" ? " book-cover-periculosidade" : ""}`}
+      style={{ aspectRatio }}
+    >
       <div className="book-cover-content">
         <span className="book-cover-serie">{serie}</span>
         <div>
