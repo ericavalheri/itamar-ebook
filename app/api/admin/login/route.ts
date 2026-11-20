@@ -1,9 +1,13 @@
+import { adminLoginConfigured } from "@/lib/sales";
 import { NextRequest, NextResponse } from "next/server";
 import { checkAdminPassword, createSessionCookieValue, ADMIN_COOKIE_NAME } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
+  if (!adminLoginConfigured()) {
+    return NextResponse.json({ error: "Painel ainda não configurado." }, { status: 503 });
+  }
   let body: unknown;
   try {
     body = await req.json();

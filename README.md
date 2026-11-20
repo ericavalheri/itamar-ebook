@@ -212,3 +212,15 @@ foram preservados.
 A pasta `docs/` reúne o histórico e o material original do projeto: mapas de contexto,
 o resumo da solução, o PDF/txt originais enviados pela Erica e a versão de referência da
 revista digital.
+
+## Prévia pública segura (pré-lançamento)
+
+`SALES_ENABLED` fica desativado por padrão. Sem `SALES_ENABLED=true` e as configurações
+obrigatórias, a biblioteca e os detalhes dos livros ficam públicos, com aviso de prévia;
+os botões de compra e o formulário de CPF não aparecem. POST `/api/orders` retorna 503
+antes de ler dados pessoais ou chamar o Asaas. Admin e leitura continuam protegidos.
+
+Para abrir vendas, validar primeiro: Asaas e webhook, domínio/remetente do Resend,
+segredos do painel, `DATA_DIR` fora do deploy (persistência e backup testados), fluxo de
+pagamento e acesso. Só depois configurar `SALES_ENABLED=true`. A flag não substitui a
+validação da infraestrutura e não confirma que as chaves são válidas.

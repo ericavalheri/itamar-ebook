@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { salesEnabled, PREVIEW_MESSAGE } from "@/lib/sales";
+export const dynamic = "force-dynamic";
 import { notFound } from "next/navigation";
 import { getProductBySlug } from "@/lib/products";
 import { formatMoney } from "@/lib/money";
@@ -11,6 +14,17 @@ export default async function ComprarPage({
   const { slug } = await params;
   const product = getProductBySlug(slug);
   if (!product) notFound();
+
+  if (!salesEnabled()) {
+    return (
+      <main className="container" style={{ padding: "48px 20px 80px" }}>
+        <span className="label">Em breve</span>
+        <h1>{product.titulo}</h1>
+        <p style={{ maxWidth: 560 }}>{PREVIEW_MESSAGE}</p>
+        <Link href={`/livros/${product.slug}`} className="btn btn-primary">Conhecer o e-book</Link>
+      </main>
+    );
+  }
 
   return (
     <main className="container" style={{ padding: "48px 20px 80px" }}>

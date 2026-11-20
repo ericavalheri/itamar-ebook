@@ -1,3 +1,4 @@
+import { readerLoginConfigured } from "@/lib/sales";
 import { NextRequest, NextResponse } from "next/server";
 import {
   getLatestApprovedOrderByEmail,
@@ -25,6 +26,9 @@ function isValidEmail(email: string) {
 }
 
 export async function POST(req: NextRequest) {
+  if (!readerLoginConfigured()) {
+    return NextResponse.json({ error: "Acesso por e-mail ainda não disponível." }, { status: 503 });
+  }
   let body: unknown;
   try {
     body = await req.json();

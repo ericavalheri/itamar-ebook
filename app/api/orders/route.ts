@@ -1,3 +1,4 @@
+import { salesEnabled, PREVIEW_MESSAGE } from "@/lib/sales";
 import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { createOrder } from "@/lib/orders";
@@ -12,6 +13,10 @@ function isValidEmail(email: string) {
 }
 
 export async function POST(req: NextRequest) {
+  // Reject before parsing personal data or calling any payment provider.
+  if (!salesEnabled()) {
+    return NextResponse.json({ error: PREVIEW_MESSAGE }, { status: 503 });
+  }
   let body: unknown;
   try {
     body = await req.json();

@@ -1,3 +1,4 @@
+import { adminLoginConfigured } from "@/lib/sales";
 import LoginForm from "./LoginForm";
 
 export default function AdminLoginPage() {
@@ -7,7 +8,7 @@ export default function AdminLoginPage() {
         <span className="label">Painel administrativo</span>
         <h1 style={{ margin: "12px 0 0" }}>Itamar E-book</h1>
       </div>
-      <LoginForm />
+      {adminLoginConfigured() ? <LoginForm /> : <p>Painel ainda não configurado. O acesso administrativo permanece desativado.</p>}
     </main>
   );
 }
