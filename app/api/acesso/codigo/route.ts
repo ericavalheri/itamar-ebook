@@ -60,9 +60,10 @@ export async function POST(req: NextRequest) {
 
   try {
     await sendAccessCodeEmail(emailTrim, code);
-  } catch {
+  } catch (err) {
     // Don't leak provider errors to the client — the generic message stays
     // the same either way. The code still exists if the admin needs to help.
+    console.error("Falha ao enviar código de acesso por e-mail:", err);
   }
 
   return respondGeneric();

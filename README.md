@@ -40,9 +40,9 @@ já funcionam para qualquer título da lista.
 4. A página `/pedido/[id]` fica se atualizando sozinha (poll a cada 4s) enquanto aguarda o
    pagamento, e assim que o status muda mostra um botão para ir até `/acessar`.
 5. Em `/acessar`, o comprador digita o e-mail usado na compra. Se houver um pedido aprovado
-   para esse e-mail, chega um código de 6 dígitos por e-mail (via Resend), válido por 10
-   minutos. Ao digitar o código certo, uma sessão é criada (cookie de 30 dias) e ele é
-   levado para `/ler`.
+   para esse e-mail, chega um código de 6 dígitos por e-mail (enviado por SMTP, usando uma
+   caixa de e-mail da própria Hostinger), válido por 10 minutos. Ao digitar o código certo,
+   uma sessão é criada (cookie de 30 dias) e ele é levado para `/ler`.
 6. Só existe **uma sessão ativa por comprador**. Se ele (ou alguém com quem compartilhou o
    e-mail e o código) fizer login de novo em outro aparelho, a sessão antiga é substituída
    na hora — a página `/ler` verifica isso a cada 20s e redireciona para `/acessar` com um
@@ -76,20 +76,32 @@ já funcionam para qualquer título da lista.
    `ASAAS_WEBHOOK_TOKEN`, os webhooks são rejeitados (o app nega por padrão em vez de aceitar
    sem verificação).
 
-## Configurando o Resend (código de acesso por e-mail)
+## Configurando o envio de e-mail (SMTP da Hostinger)
 
-1. Crie uma conta em [resend.com](https://resend.com) e gere uma chave de API em **API
-   Keys**. Coloque em `RESEND_API_KEY`.
-2. **Importante**: enquanto nenhum domínio estiver verificado no Resend, o remetente padrão
-   `onboarding@resend.dev` só consegue mandar e-mail para o endereço da própria conta
-   Resend — ótimo pra testar sozinho, mas não entrega para os compradores de verdade.
-3. Quando o domínio definitivo do Itamar estiver definido (ainda não é o
-   `agenciacavalheri.com.br`, segundo combinado), verifique esse domínio em **Domains** no
-   Resend (é adicionar uns registros DNS) e troque `RESEND_FROM_EMAIL` para algo como
-   `"Honestamente, Itamar <acesso@dominio-do-itamar.com.br>"`. Isso não exige nenhuma
-   mudança de código — só a variável de ambiente.
-4. Sem `RESEND_API_KEY`, o pedido de código falha silenciosamente (o comprador não recebe
-   e-mail, mas a resposta continua genérica por segurança) — configure antes de divulgar.
+O código de acesso de 6 dígitos é enviado por SMTP, usando uma caixa de e-mail criada na
+própria hospedagem (ex.: `acesso@honestamenteitamar.com.br`), em vez de um provedor de
+e-mail transacional separado.
+
+1. No hPanel, crie a caixa em **E-mails → Contas de e-mail** (ex.: `acesso@SEU-DOMINIO`).
+2. Ainda no hPanel, a própria tela da conta de e-mail mostra os dados de **"Configurar
+   cliente de e-mail" / "Mail client configuration"** — é de lá que saem os valores exatos
+   de `SMTP_HOST` e `SMTP_PORT` (variam conforme o produto de e-mail do plano de hospedagem).
+   Normalmente a porta 465 usa conexão já criptografada (`secure: true`, tratado
+   automaticamente pelo código) — se o painel indicar outra porta (ex.: 587), ajuste
+   `SMTP_PORT` de acordo.
+3. `SMTP_USER` e `SMTP_PASSWORD` são o e-mail completo e a senha dessa caixa.
+4. `SMTP_FROM` é o remetente que o comprador vê — pode ser só o e-mail ou
+   `"Honestamente, Itamar <acesso@SEU-DOMINIO>"`.
+5. Sem essas variáveis configuradas, o pedido de código falha silenciosamente (o comprador
+   não recebe e-mail, mas a resposta na tela continua genérica por segurança) — configure
+   antes de divulgar, e veja os logs de execução da aplicação no hPanel se precisar
+   diagnosticar uma falha de envio (erro de autenticação, limite de envio da caixa, etc.).
+
+**Atenção a limites de envio**: caixas de e-mail de hospedagem costumam ter limites de envio
+por hora/dia bem mais baixos que um serviço de e-mail transacional dedicado, e esse código
+expira em 10 minutos — se o volume de vendas crescer e os e-mails começarem a atrasar ou
+cair em spam, considere migrar para um serviço como Resend ou Amazon SES (só trocar
+`lib/email.ts`, o resto do fluxo não muda).
 
 ## Rodando localmente
 
@@ -97,7 +109,7 @@ já funcionam para qualquer título da lista.
 npm install
 cp .env.example .env
 # edite o .env com a senha do painel, a chave de API do Asaas (sandbox), o token do webhook
-# e a chave do Resend
+# e os dados SMTP da caixa de e-mail
 npm run dev
 ```
 
@@ -114,7 +126,7 @@ da Hostinger), não hospedagem PHP simples.
 1. **hPanel → Avançado → Node.js → Criar aplicação**:
    - Versão do Node: 20.x (ou a mais recente disponível).
    - Raiz da aplicação: a pasta onde o projeto vai ficar (ex.: `itamar-ebook`).
-   - URL da aplicação: `honestamente-itamar.agenciacavalheri.com.br`.
+   - URL da aplicação: `honestamenteitamar.com.br`.
    - Arquivo de inicialização (`startup file`): `server.js` — esse arquivo já está pronto no
      repo, ele escuta na porta que o Passenger/hPanel define via `process.env.PORT`
      (diferente de `next start`, que não respeita isso da mesma forma).
@@ -124,8 +136,9 @@ da Hostinger), não hospedagem PHP simples.
    FTP/File Manager se preferir enviar os arquivos manualmente.
 3. **Variáveis de ambiente**: no painel Node.js tem uma seção de variáveis — preencha com os
    mesmos nomes do `.env.example` (`ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`, `ASAAS_API_KEY`,
-   `ASAAS_ENV=production`, `ASAAS_WEBHOOK_TOKEN`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`),
-   com valores reais — nunca os de teste usados durante o desenvolvimento.
+   `ASAAS_ENV=production`, `ASAAS_WEBHOOK_TOKEN`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`,
+   `SMTP_PASSWORD`, `SMTP_FROM`), com valores reais — nunca os de teste usados durante o
+   desenvolvimento.
 4. **Instalar dependências**: use o botão "Executar comando NPM install" do painel (ou, se
    tiver acesso SSH, `npm install` manualmente na pasta da aplicação).
 5. **Banco de dados persistente**: por padrão o SQLite é salvo em `./data/` dentro da pasta
@@ -137,8 +150,8 @@ da Hostinger), não hospedagem PHP simples.
    configure como parte do processo de deploy do painel) e reinicie a aplicação Node.js pelo
    hPanel.
 7. **Webhook do Asaas**: depois que o site estiver acessível em
-   `https://honestamente-itamar.agenciacavalheri.com.br`, cadastre no Asaas a URL
-   `https://honestamente-itamar.agenciacavalheri.com.br/api/webhooks/asaas` como descrito em
+   `https://honestamenteitamar.com.br`, cadastre no Asaas a URL
+   `https://honestamenteitamar.com.br/api/webhooks/asaas` como descrito em
    "Configurando o Asaas" acima.
 
 Se o `npm install` falhar tentando compilar o `better-sqlite3` (módulo nativo — alguns
@@ -148,9 +161,9 @@ avise: nesse caso trocamos o SQLite por uma alternativa sem compilação nativa.
 ## Variáveis de ambiente
 
 Veja `.env.example`. As obrigatórias são `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`,
-`ASAAS_API_KEY` e `ASAAS_WEBHOOK_TOKEN` (para a venda automática) e `RESEND_API_KEY` (para o
-login por e-mail funcionar). Preço não é mais uma variável de ambiente — cada e-book tem o
-seu, definido em `lib/products.ts`.
+`ASAAS_API_KEY` e `ASAAS_WEBHOOK_TOKEN` (para a venda automática) e `SMTP_HOST`/`SMTP_USER`/
+`SMTP_PASSWORD` (para o login por e-mail funcionar). Preço não é mais uma variável de
+ambiente — cada e-book tem o seu, definido em `lib/products.ts`.
 
 ## Dados e armazenamento
 
@@ -190,8 +203,9 @@ foram preservados.
 
 - Páginas de campanha específicas por anúncio (Meta Ads / Google Ads) com parâmetros de
   rastreamento, conforme `docs/resumo-solucao-itamar-2026-09-16.md`.
-- Quando o domínio definitivo do Itamar estiver definido, migrar o `RESEND_FROM_EMAIL` (e
-  possivelmente o próprio deploy) para esse domínio.
+- Se o volume de vendas crescer e o envio por SMTP da Hostinger começar a atrasar ou cair em
+  spam, considere migrar `lib/email.ts` para um serviço de e-mail transacional dedicado
+  (Resend, Amazon SES, etc.).
 
 ## Documentação de referência
 
