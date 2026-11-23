@@ -15,6 +15,7 @@ import {
   OTP_MIN_RESEND_SECONDS,
 } from "@/lib/otp";
 import { sendAccessCodeEmail } from "@/lib/email";
+import { getProductBySlug } from "@/lib/products";
 
 export const runtime = "nodejs";
 
@@ -62,8 +63,9 @@ export async function POST(req: NextRequest) {
   const code = generateOtpCode();
   createOtpRequest(order.id, emailTrim, hashOtpCode(code), OTP_TTL_MINUTES);
 
+  const product = getProductBySlug(order.produto);
   try {
-    await sendAccessCodeEmail(emailTrim, code);
+    await sendAccessCodeEmail(emailTrim, product?.titulo ?? order.produto, code);
   } catch (err) {
     // Don't leak provider errors to the client — the generic message stays
     // the same either way. The code still exists if the admin needs to help.

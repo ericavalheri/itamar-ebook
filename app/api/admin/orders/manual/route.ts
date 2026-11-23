@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/auth";
 import { createManualOrder } from "@/lib/orders";
 import { getProductBySlug } from "@/lib/products";
+import { notifyOrderApproved } from "@/lib/purchase-notify";
 
 export const runtime = "nodejs";
 
@@ -45,6 +46,8 @@ export async function POST(req: NextRequest) {
     cpf: typeof cpf === "string" ? cpf.trim() : "",
     valorCentavos: product.precoCentavos,
   });
+
+  await notifyOrderApproved(order);
 
   return NextResponse.json({ order });
 }

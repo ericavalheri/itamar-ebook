@@ -7,6 +7,7 @@ import {
   markOrderExpired,
   markOrderCancelled,
 } from "@/lib/orders";
+import { notifyOrderApproved } from "@/lib/purchase-notify";
 
 export const runtime = "nodejs";
 
@@ -55,7 +56,11 @@ export async function POST(req: NextRequest) {
   }
 
   if (PAID_EVENTS.has(event)) {
-    markOrderPaid(order.id);
+    const wasAwaitingPayment = order.status === "aguardando_pagamento";
+    const updated = markOrderPaid(order.id);
+    if (wasAwaitingPayment && updated?.status === "aprovado") {
+      await notifyOrderApproved(updated);
+    }
   } else if (EXPIRED_EVENTS.has(event)) {
     markOrderExpired(order.id);
   } else if (CANCELLED_EVENTS.has(event)) {
