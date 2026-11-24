@@ -2,7 +2,7 @@ import AuthorProfile from "@/components/AuthorProfile";
 import { salesEnabled } from "@/lib/sales";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getProductBySlug } from "@/lib/products";
+import { getCatalogProductBySlug } from "@/lib/products";
 import { formatMoney } from "@/lib/money";
 import { ICONS } from "@/components/icons";
 import BookCover from "@/components/BookCover";
@@ -13,10 +13,10 @@ export default async function LivroPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = getCatalogProductBySlug(slug);
   if (!product) notFound();
 
-  const canBuy = salesEnabled();
+  const canBuy = !product.catalogOnly && salesEnabled();
 
   return (
     <main>
@@ -42,7 +42,7 @@ export default async function LivroPage({
                 <span className="btn" aria-disabled="true">Vendas em breve — {formatMoney(product.precoCentavos)}</span>
               )}
               <span style={{ fontSize: "0.86rem", color: "var(--muted)" }}>
-                {canBuy ? "Acesso liberado após confirmação do pagamento via Pix" : "Catálogo em pré-lançamento. Nenhum pagamento está sendo recebido."}
+                {canBuy ? "Acesso liberado após confirmação do pagamento via Pix" : product.catalogOnly ? "Este volume ainda não está disponível para compra." : "Catálogo em pré-lançamento. Nenhum pagamento está sendo recebido."}
               </span>
             </div>
           </div>
@@ -66,7 +66,7 @@ export default async function LivroPage({
 
       <section className="container" style={{ padding: "56px 20px" }}>
         <h2 className="font-display" style={{ fontSize: "1.5rem", marginBottom: 24, color: "var(--navy)" }}>
-          O que você recebe
+          {product.catalogOnly ? "Temas deste volume" : "O que você recebe"}
         </h2>
         <div
           style={{

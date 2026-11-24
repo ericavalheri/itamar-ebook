@@ -37,3 +37,29 @@ export const PRODUCTS: Product[] = [
 export function getProductBySlug(slug: string): Product | undefined {
   return PRODUCTS.find((p) => p.slug === slug);
 }
+
+export type CatalogProduct = Omit<Product, "contentFile"> & { catalogOnly?: true };
+
+// Listing metadata only. Unreleased titles must not enter PRODUCTS, the
+// order/checkout/admin/reader registry, until their sales and content are ready.
+export const CATALOG_PRODUCTS: CatalogProduct[] = [
+  ...PRODUCTS.map(({ contentFile: _private, ...listing }) => listing),
+  {
+    slug: "adicional-insalubridade",
+    serie: "Série Verbas Trabalhistas · Volume 02",
+    titulo: "Adicional de Insalubridade",
+    subtitulo: "Entenda quando se aplica e como conferir o pagamento",
+    descricaoCurta: "Conheça os temas do segundo volume: exposição no trabalho, graus de insalubridade e conferência do adicional.",
+    precoCentavos: 3800,
+    catalogOnly: true,
+    recursos: [
+      { icon: "scale", titulo: "Critérios", texto: "Exposição a agentes nocivos e enquadramento nas regras aplicáveis." },
+      { icon: "calculator", titulo: "Graus e cálculo", texto: "Grau mínimo, médio e máximo e o que observar no cálculo." },
+      { icon: "receipt", titulo: "Conferência do pagamento", texto: "Como identificar o adicional no contracheque." },
+    ],
+  },
+];
+
+export function getCatalogProductBySlug(slug: string): CatalogProduct | undefined {
+  return CATALOG_PRODUCTS.find((p) => p.slug === slug);
+}
