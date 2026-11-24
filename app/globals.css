@@ -511,3 +511,17 @@ th {
   .editorial-link { font-size:12px; }
 }
 @media(max-width:380px) { .hero-featured-cover .book-cover-titulo { font-size:18px!important; } .book-card-bottom { flex-wrap:wrap; } }
+
+/* Shared author profile: footer and public book pages. */
+.author-profile { display:grid; grid-template-columns:minmax(0,9rem) minmax(0,1fr); align-items:center; gap:clamp(1rem,3vw,2rem); line-height:1.55; }
+.author-profile img { display:block; width:100%; height:auto; border-radius:.6rem; }
+.author-profile h2 { margin:.15rem 0 .35rem; font-family:var(--font-display), Georgia, serif; font-size:clamp(1.25rem,2.8vw,1.85rem); line-height:1.2; }
+.author-profile p { margin:0; max-width:58ch; }
+.author-profile p + p { margin-top:.55rem; }
+.author-profile .author-profile__label { font-size:.75rem; font-weight:700; letter-spacing:.09em; text-transform:uppercase; }
+.author-profile--footer { grid-template-columns:minmax(0,4.25rem) minmax(0,1fr); padding-block:1.5rem; color:#fff4e2; border-bottom:1px solid #ffffff33; }
+.author-profile--footer h2 {font-size:1.25rem;}
+.author-profile--book {padding:clamp(1rem,3vw,1.75rem);background:var(--sand);color:var(--ink);border-radius:var(--radius);}
+.author-book-shell {padding:0 20px 2.5rem;}
+@media (max-width:480px) {.author-profile--book {grid-template-columns:minmax(0,5.25rem) minmax(0,1fr);}}
+@media (max-width:330px) {.author-profile--book {grid-template-columns:1fr;} .author-profile--book img {max-width:5.25rem;}}

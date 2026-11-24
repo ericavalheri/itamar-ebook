@@ -1,3 +1,4 @@
+import AuthorProfile from "@/components/AuthorProfile";
 import { salesEnabled } from "@/lib/sales";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -106,6 +107,8 @@ export default async function LivroPage({
           </Link>
         </div>
       </section>}
+
+      <div className="container author-book-shell"><AuthorProfile variant="book" /></div>
 
       <div className="container" style={{ padding: "0 20px 48px" }}>
         <Link href="/" style={{ fontSize: "0.9rem", color: "var(--muted)" }}>
