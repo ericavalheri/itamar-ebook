@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { randomBytes } from "node:crypto";
 import { readPrivateManuscript } from "@/lib/reader-content";
+import { applyVolumeOneMobileMath } from "@/lib/reader-mobile-math";
 import { resolveReaderTitle } from "@/lib/reader-library";
 import { READER_COOKIE_NAME } from "@/lib/reader-session";
 
@@ -103,7 +104,8 @@ export async function GET(req: NextRequest) {
   const manuscript = await readPrivateManuscript(product.contentFile);
   if (!manuscript) return denyPage("E-book temporariamente indisponível", "Não foi possível abrir esta edição. Sua compra não foi afetada. Tente novamente em instantes.", 503);
   const nonce = randomBytes(16).toString("base64url");
-  const html = manuscript.replace(/<\/body\s*>/i, () => `${switcher}${watcher(product.slug)}</body>`)
+  const prepared = product.contentFile === "adicional-periculosidade.html" ? applyVolumeOneMobileMath(manuscript) : manuscript;
+  const html = prepared.replace(/<\/body\s*>/i, () => `${switcher}${watcher(product.slug)}</body>`)
     .replace(/<script(?=[\s>])/gi, () => `<script nonce="${nonce}"`);
   return new Response(html, {
     status: 200,
