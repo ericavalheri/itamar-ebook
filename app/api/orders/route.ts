@@ -1,8 +1,11 @@
-import { salesEnabled, PREVIEW_MESSAGE } from "@/lib/sales";
-import { randomUUID } from "node:crypto";
+import { rejectUntrustedAdminOrigin } from "@/lib/admin-accounts";
+import { ownerPixPilot, PILOT_CENTAVOS } from "@/lib/owner-pix-pilot";
+import { pixCheckoutEnabled, PREVIEW_MESSAGE } from "@/lib/sales";
+import { CouponError, reserveCoupon, reserveOwnerPilotCoupon, releaseCouponReservation } from "@/lib/coupons";
+import { claimPixRequest, pixRequestPattern, releaseUnusedPixRequest } from "@/lib/pix-request";
 import { NextRequest, NextResponse } from "next/server";
-import { createOrder } from "@/lib/orders";
-import { getProductBySlug } from "@/lib/products";
+import { createOrder, getOrderById } from "@/lib/orders";
+import { getCheckoutProduct } from "@/lib/checkout-catalog";
 import { isValidCPF, onlyDigits } from "@/lib/cpf";
 import { findOrCreateCustomer, createPixCharge, getPixQrCode, AsaasError } from "@/lib/asaas";
 
@@ -13,8 +16,13 @@ function isValidEmail(email: string) {
 }
 
 export async function POST(req: NextRequest) {
-  // Reject before parsing personal data or calling any payment provider.
-  if (!salesEnabled()) {
+  const pilotRequest = req.headers.get("x-itamar-pix-pilot") === "1";
+  if (pilotRequest) {
+    const denied = rejectUntrustedAdminOrigin(req);
+    if (denied) return denied;
+  }
+  const pilot = pilotRequest ? await ownerPixPilot() : null;
+  if (pilotRequest ? !pilot : !pixCheckoutEnabled()) {
     return NextResponse.json({ error: PREVIEW_MESSAGE }, { status: 503 });
   }
   let body: unknown;
@@ -24,9 +32,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Corpo inválido." }, { status: 400 });
   }
 
-  const { produto, nome, email, telefone, estado, cpf } = (body ?? {}) as Record<string, unknown>;
+  const { produto, nome, email, telefone, estado, cpf, coupon, requestId } = (body ?? {}) as Record<string, unknown>;
 
-  const product = typeof produto === "string" ? getProductBySlug(produto) : undefined;
+  if (typeof requestId !== "string" || !pixRequestPattern.test(requestId)) {
+    return NextResponse.json({error:"Reabra a página para iniciar o pedido."},{status:400});
+  }
+  if (coupon !== undefined && (typeof coupon !== "string" || coupon.length > 48)) {
+    return NextResponse.json({error:"Cupom inválido."},{status:400});
+  }
+  if (pilot && (produto !== pilot.product.slug || coupon !== undefined)) {
+    return NextResponse.json({error:"O teste está limitado ao Volume 1."},{status:400});
+  }
+  const product = pilot ? pilot.product : typeof produto === "string" ? await getCheckoutProduct(produto) : undefined;
   if (!product) {
     return NextResponse.json({ error: "E-book não encontrado." }, { status: 404 });
   }
@@ -49,9 +66,33 @@ export async function POST(req: NextRequest) {
   const telefoneTrim = telefone.trim();
   const cpfDigits = onlyDigits(cpf);
 
-  const id = randomUUID();
+  const id = requestId.toLowerCase();
+  const normalizedCoupon = pilot?.coupon ?? (typeof coupon === "string" ? coupon.trim().toUpperCase() || undefined : undefined);
+  const replyOrder = (order: NonNullable<ReturnType<typeof getOrderById>>) => NextResponse.json({
+    id:order.id, amountCentavos:order.valor_centavos, status:order.status,
+    pix:{qrBase64:order.pix_qr_base64,copyPaste:order.pix_copia_cola,expiresAt:order.pix_expiracao},
+  }, {headers:{"Cache-Control":"private, no-store"}});
+  let claim: ReturnType<typeof claimPixRequest>;
+  try { claim=claimPixRequest(id,[pilot ? "owner-pilot" : "public", produto as string,nomeTrim,emailTrim,telefoneTrim,estado.trim().toUpperCase(),cpfDigits,normalizedCoupon??""]); }
+  catch { return NextResponse.json({error:"Não foi possível preparar o Pix."},{status:503}); }
+  if (claim !== "new") {
+    const previous = claim === "existing" ? getOrderById(id) : undefined;
+    if (previous?.pix_qr_base64 && previous.pix_copia_cola && (!pilot || previous.valor_centavos === PILOT_CENTAVOS)) return replyOrder(previous);
+    return NextResponse.json({
+      error: claim==="different" ? "Este navegador já tem um pedido com outros dados. Confira o cadastro anterior." :
+        "Ainda não deu para recuperar este Pix. Não gere outro pedido; confira novamente em instantes.",
+      mayHaveCreatedOrder:true,
+    },{status:409,headers:{"Cache-Control":"private, no-store"}});
+  }
 
+  let paymentAttempted = false;
+  let reservation;
   try {
+    reservation = pilot
+      ? reserveOwnerPilotCoupon(pilot.coupon,pilot.expiresAt,product.precoCentavos,id)
+      : reserveCoupon(normalizedCoupon, product.precoCentavos, id);
+    if (pilot && (reservation.couponCode !== pilot.coupon || reservation.amountCentavos !== PILOT_CENTAVOS ||
+        pilot.expiresMs <= Date.now())) throw new CouponError();
     const customer = await findOrCreateCustomer({
       name: nomeTrim,
       email: emailTrim,
@@ -59,9 +100,11 @@ export async function POST(req: NextRequest) {
       phone: telefoneTrim,
     });
 
+    if (pilot && pilot.expiresMs <= Date.now()) throw new CouponError();
+    paymentAttempted = true;
     const payment = await createPixCharge({
       customerId: customer.id,
-      valueCentavos: product.precoCentavos,
+      valueCentavos: reservation.amountCentavos,
       description: `E-book ${product.titulo}`,
       externalReference: id,
     });
@@ -76,7 +119,7 @@ export async function POST(req: NextRequest) {
       telefone: telefoneTrim,
       estado: estado.trim().toUpperCase(),
       cpf: cpfDigits,
-      valorCentavos: product.precoCentavos,
+      valorCentavos: reservation.amountCentavos,
       asaasCustomerId: customer.id,
       asaasPaymentId: payment.id,
       pixQrBase64: qrCode.encodedImage,
@@ -84,15 +127,22 @@ export async function POST(req: NextRequest) {
       pixExpiracao: qrCode.expirationDate,
     });
 
-    return NextResponse.json({ id: order.id });
+    return replyOrder(order);
   } catch (err) {
-    if (err instanceof AsaasError) {
-      return NextResponse.json(
-        { error: `Não foi possível gerar o Pix: ${err.message}` },
-        { status: 502 }
-      );
+    if (!paymentAttempted) {
+      try {
+        if (reservation) releaseCouponReservation(id);
+        releaseUnusedPixRequest(id);
+      } catch { console.error("Falha interna ao liberar reserva de checkout."); }
     }
-    const message = err instanceof Error ? err.message : "Erro desconhecido.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    if (err instanceof CouponError) {
+      return NextResponse.json({error:"Cupom inválido ou indisponível."},{status:400});
+    }
+    return NextResponse.json({
+      error:paymentAttempted
+        ? "Não deu para confirmar se o Pix foi criado. Para evitar gerar outro pedido, não envie novamente agora."
+        : "Não foi possível preparar o Pix. Confira seus dados e tente novamente.",
+      mayHaveCreatedOrder:paymentAttempted,
+    },{status:err instanceof AsaasError ? 502 : 500,headers:{"Cache-Control":"private, no-store"}});
   }
 }

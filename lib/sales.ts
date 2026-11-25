@@ -17,3 +17,8 @@ export function readerLoginConfigured(): boolean {
 export function adminLoginConfigured(): boolean {
   return Boolean(process.env.ADMIN_PASSWORD?.trim() && process.env.ADMIN_SESSION_SECRET?.trim());
 }
+
+// Separate pilot gate: sales still require the existing environment prerequisites.
+export function pixCheckoutEnabled(): boolean {
+  return process.env.PIX_CHECKOUT_ENABLED === "true" && salesEnabled();
+}

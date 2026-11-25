@@ -1,45 +1,17 @@
-import { adminLoginConfigured } from "@/lib/sales";
-import { NextRequest, NextResponse } from "next/server";
-import { checkAdminPassword, createSessionCookieValue, ADMIN_COOKIE_NAME } from "@/lib/auth";
-
+import { COOKIE,cookieOptions } from "@/lib/admin-auth-core.mjs";
+import { adminJson,getAccountsIfEnabled,readAdminJson,rejectUntrustedAdminOrigin } from "@/lib/admin-accounts";
 export const runtime = "nodejs";
-
-export async function POST(req: NextRequest) {
-  if (!adminLoginConfigured()) {
-    return NextResponse.json({ error: "Painel ainda não configurado." }, { status: 503 });
-  }
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Corpo inválido." }, { status: 400 });
-  }
-  const { password } = (body ?? {}) as Record<string, unknown>;
-  if (typeof password !== "string" || password.length === 0) {
-    return NextResponse.json({ error: "Informe a senha." }, { status: 400 });
-  }
-
-  let valid: boolean;
-  try {
-    valid = checkAdminPassword(password);
-  } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Configuração ausente." },
-      { status: 500 }
-    );
-  }
-
-  if (!valid) {
-    return NextResponse.json({ error: "Senha incorreta." }, { status: 401 });
-  }
-
-  const res = NextResponse.json({ ok: true });
-  res.cookies.set(ADMIN_COOKIE_NAME, createSessionCookieValue(), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 12,
-  });
-  return res;
+export async function POST(req: Request) {
+  const rejected = rejectUntrustedAdminOrigin(req);
+  if (rejected) return rejected;
+  const accounts = getAccountsIfEnabled();
+  if (!accounts) return adminJson({error:"Acesso administrativo indisponível."},503);
+  const body = await readAdminJson(req);
+  if (!body || typeof body.email !== "string" || typeof body.password !== "string") return adminJson({error:"Dados de acesso inválidos."},400);
+  // Dedicated global/account SQLite buckets are independent of any caller-spoofable IP headers.
+  const token = await accounts.login({email:body.email,password:body.password,trustedSourceKey:"admin-global"});
+  if (!token) return adminJson({error:"Não foi possível entrar. Confira os dados ou aguarde alguns minutos."},401);
+  const response = adminJson({ok:true});
+  response.cookies.set(COOKIE,token,cookieOptions);
+  return response;
 }

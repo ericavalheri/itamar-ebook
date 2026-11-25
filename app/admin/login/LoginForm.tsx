@@ -1,49 +1,30 @@
 "use client";
-
-import { useRouter } from "next/navigation";
 import { useState } from "react";
+import s from "../admin-dashboard.module.css";
 
 export default function LoginForm() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError("");
-    setLoading(true);
+    if (busy) return;
     const form = new FormData(event.currentTarget);
-    const password = String(form.get("password") || "");
+    setError(""); setBusy(true);
     try {
-      const res = await fetch("/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setError(data.error || "Senha incorreta.");
-        setLoading(false);
-        return;
-      }
-      router.push("/admin");
-      router.refresh();
-    } catch {
-      setError("Falha de conexão. Tente novamente.");
-      setLoading(false);
-    }
+      const res = await fetch("/api/admin/login", {method: "POST", cache: "no-store",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({email: form.get("email"), password: form.get("password")})});
+      if (res.ok) { window.location.replace("/admin"); return; }
+      setError(res.status === 429 ? "Muitas tentativas. Aguarde e tente novamente."
+        : res.status === 503 ? "O acesso administrativo ainda não está configurado."
+        : res.status === 401 ? "E-mail ou senha incorretos." : "Não foi possível entrar. Tente novamente.");
+    } catch { setError("Falha na conexão. Tente novamente."); }
+    setBusy(false);
   }
-
-  return (
-    <form onSubmit={handleSubmit} className="card" style={{ padding: 28, maxWidth: 380, margin: "0 auto" }}>
-      <div className="field">
-        <label htmlFor="password">Senha do painel</label>
-        <input id="password" name="password" type="password" required autoFocus />
-      </div>
-      <div className="error-box">{error}</div>
-      <button className="btn btn-primary" type="submit" disabled={loading} style={{ width: "100%" }}>
-        {loading ? "Entrando..." : "Entrar"}
-      </button>
-    </form>
-  );
+  return <form className={s.form} action="/api/admin/login" method="post" onSubmit={submit}>
+    <label>E-mail profissional<input type="email" name="email" autoComplete="username" maxLength={254} required /></label>
+    <label>Senha<input type="password" name="password" autoComplete="current-password" maxLength={256} required /></label>
+    {error && <p className={s.error} role="alert">{error}</p>}
+    <button className={s.primary} type="submit" disabled={busy}>{busy ? "Entrando…" : "Entrar no painel"}</button>
+  </form>;
 }

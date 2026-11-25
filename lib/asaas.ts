@@ -87,6 +87,9 @@ export interface AsaasPayment {
   status: string;
   value: number;
   dueDate: string;
+  externalReference?: string;
+  billingType?: string;
+  deleted?: boolean;
 }
 
 function tomorrowDate(): string {
@@ -125,5 +128,5 @@ export async function getPixQrCode(paymentId: string): Promise<AsaasPixQrCode> {
 }
 
 export async function getPayment(paymentId: string): Promise<AsaasPayment> {
-  return asaasFetch<AsaasPayment>(`/payments/${paymentId}`);
+  return asaasFetch<AsaasPayment>(`/payments/${encodeURIComponent(paymentId)}`, {method:"GET", redirect:"error", signal:AbortSignal.timeout(5000)});
 }

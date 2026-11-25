@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { isAdminAuthenticated } from "@/lib/auth";
+import { readAdminJson, requireOwnerMutation } from "@/lib/admin-accounts";
 import { createManualOrder } from "@/lib/orders";
 import { getProductBySlug } from "@/lib/products";
 import { notifyOrderApproved } from "@/lib/purchase-notify";
@@ -12,13 +12,12 @@ function isValidEmail(email: string) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
-  }
+  const denial = await requireOwnerMutation(req);
+  if (denial) return denial;
 
   let body: unknown;
   try {
-    body = await req.json();
+    body = await readAdminJson(req);
   } catch {
     return NextResponse.json({ error: "Corpo inválido." }, { status: 400 });
   }
@@ -49,5 +48,5 @@ export async function POST(req: NextRequest) {
 
   await notifyOrderApproved(order);
 
-  return NextResponse.json({ order });
+  return NextResponse.json({ ok: true }, { headers: { "Cache-Control": "private, no-store" } });
 }

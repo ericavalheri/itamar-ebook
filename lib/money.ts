@@ -13,4 +13,5 @@ export const STATUS_LABEL: Record<OrderStatus, string> = {
   expirado: "Pix expirado",
   cancelado: "Cancelado",
   bloqueado: "Bloqueado",
+  estornado: "Estornado",
 };

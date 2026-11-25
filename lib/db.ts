@@ -70,7 +70,8 @@ export type OrderStatus =
   | "aprovado"
   | "expirado"
   | "cancelado"
-  | "bloqueado";
+  | "bloqueado"
+  | "estornado";
 
 export interface Order {
   id: string;

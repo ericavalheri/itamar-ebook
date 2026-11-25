@@ -1,34 +1,25 @@
 import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
-import fs from "node:fs";
-import path from "node:path";
-import { getOrderByActiveSession } from "@/lib/orders";
-import { getProductBySlug } from "@/lib/products";
+import { randomBytes } from "node:crypto";
+import { readPrivateManuscript } from "@/lib/reader-content";
+import { resolveReaderTitle } from "@/lib/reader-library";
 import { READER_COOKIE_NAME } from "@/lib/reader-session";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const contentCache = new Map<string, string>();
-function readEbookContent(contentFile: string) {
-  const cached = contentCache.get(contentFile);
-  if (cached) return cached;
-  const filePath = path.join(process.cwd(), "content", contentFile);
-  const html = fs.readFileSync(filePath, "utf8");
-  contentCache.set(contentFile, html);
-  return html;
-}
-
 // Polls the session while the reader is open and kicks the buyer back to
 // /acessar the moment another device logs in and takes over the session —
 // that's what makes "logging in elsewhere ends this session" feel immediate
 // instead of only on the next page load.
-const SESSION_WATCHER_SCRIPT = `
+function watcher(slug: string) {
+  const url = JSON.stringify("/api/acesso/status?livro=" + encodeURIComponent(slug));
+  return `
 <script>
 (function () {
   async function checkSession() {
     try {
-      const res = await fetch("/api/acesso/status", { cache: "no-store" });
+      const res = await fetch(${url}, { cache: "no-store" });
       const data = await res.json();
       if (!data.valid) {
         window.location.href = "/acessar?encerrado=1";
@@ -51,6 +42,7 @@ const SESSION_WATCHER_SCRIPT = `
 })();
 </script>
 `;
+}
 
 function denyPage(title: string, message: string, status: number) {
   const html = `<!doctype html>
@@ -79,16 +71,16 @@ function denyPage(title: string, message: string, status: number) {
 </html>`;
   return new Response(html, {
     status,
-    headers: { "Content-Type": "text/html; charset=utf-8" },
+    headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "private, no-store" },
   });
 }
 
-export async function GET(_req: NextRequest) {
+export async function GET(req: NextRequest) {
   const store = await cookies();
   const sessionId = store.get(READER_COOKIE_NAME)?.value;
-  const order = sessionId ? getOrderByActiveSession(sessionId) : undefined;
+  const selection = resolveReaderTitle(sessionId, new URL(req.url).searchParams.get("livro"));
 
-  if (!order) {
+  if (selection.kind === "invalid-session") {
     return denyPage(
       "Faça login para ler",
       "Sua sessão não é mais válida — pode ter expirado ou sido aberta em outro lugar. Faça login de novo com seu e-mail.",
@@ -96,8 +88,7 @@ export async function GET(_req: NextRequest) {
     );
   }
 
-  const product = getProductBySlug(order.produto);
-  if (!product) {
+  if (selection.kind !== "ok") {
     return denyPage(
       "E-book indisponível",
       "Não encontramos o conteúdo deste e-book no momento. Fale com a equipe.",
@@ -105,15 +96,24 @@ export async function GET(_req: NextRequest) {
     );
   }
 
-  const html = readEbookContent(product.contentFile).replace(
-    "</body>",
-    `${SESSION_WATCHER_SCRIPT}</body>`
-  );
+  const {product,titles} = selection;
+  const escapeHtml = (value: string) => value.replace(/[&<>"']/g, c => (({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"} as Record<string,string>)[c] ?? c));
+  const switcher = titles.length < 2 ? "" : '<nav aria-label="Meus livros" style="position:fixed;right:1rem;bottom:1rem;z-index:10000;max-width:calc(100% - 2rem);max-height:50vh;overflow:auto;background:#15283c;color:white;padding:.6rem 1rem;border-radius:.5rem"><details><summary>Meus livros</summary><ul>' +
+    titles.map(({slug,titulo}) => '<li><a style="color:white" href="/ler?livro=' + encodeURIComponent(slug) + '"' + (slug === product.slug ? ' aria-current="page"' : '') + '>' + escapeHtml(titulo) + '</a></li>').join("") + '</ul></details></nav>';
+  const manuscript = await readPrivateManuscript(product.contentFile);
+  if (!manuscript) return denyPage("E-book temporariamente indisponível", "Não foi possível abrir esta edição. Sua compra não foi afetada. Tente novamente em instantes.", 503);
+  const nonce = randomBytes(16).toString("base64url");
+  const html = manuscript.replace(/<\/body\s*>/i, () => `${switcher}${watcher(product.slug)}</body>`)
+    .replace(/<script(?=[\s>])/gi, () => `<script nonce="${nonce}"`);
   return new Response(html, {
     status: 200,
     headers: {
       "Content-Type": "text/html; charset=utf-8",
       "Cache-Control": "private, no-store",
+      "X-Content-Type-Options": "nosniff",
+      "Referrer-Policy": "no-referrer",
+      "X-Robots-Tag": "noindex, nofollow, noarchive",
+      "Content-Security-Policy": `default-src 'none'; script-src 'nonce-${nonce}'; style-src 'unsafe-inline'; img-src data:; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'`,
     },
   });
 }

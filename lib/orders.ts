@@ -1,3 +1,4 @@
+import { READER_COOKIE_MAX_AGE } from "./reader-session";
 import { randomUUID } from "node:crypto";
 import { db, Order } from "./db";
 
@@ -106,20 +107,24 @@ export function getOrderByAsaasPaymentId(paymentId: string): Order | undefined {
 export function getLatestApprovedOrderByEmail(email: string): Order | undefined {
   return db
     .prepare(
-      "SELECT * FROM orders WHERE email = ? AND status = 'aprovado' ORDER BY created_at DESC LIMIT 1"
+      "SELECT * FROM orders WHERE lower(trim(email)) = ? AND status = 'aprovado' ORDER BY created_at DESC, id DESC LIMIT 1"
     )
-    .get(email) as Order | undefined;
+    .get(email.trim().toLowerCase()) as Order | undefined;
 }
 
 export function getOrderByActiveSession(sessionId: string): Order | undefined {
   if (!sessionId) return undefined;
   return db
     .prepare(
-      "SELECT * FROM orders WHERE active_session_id = ? AND status = 'aprovado'"
+      "SELECT * FROM orders WHERE active_session_id = ? AND status = 'aprovado' AND active_session_created_at > ? AND active_session_created_at <= ?"
     )
-    .get(sessionId) as Order | undefined;
+    .get(sessionId, new Date(Date.now() - READER_COOKIE_MAX_AGE * 1000).toISOString(), new Date().toISOString()) as Order | undefined;
 }
 
+export function getReaderEntitledSlugs(email: string): string[] {
+  const rows = db.prepare("SELECT DISTINCT produto FROM orders WHERE lower(trim(email)) = ? AND status = 'aprovado'").all(email.trim().toLowerCase()) as Array<{produto:string}>;
+  return rows.map(r => r.produto);
+}
 export function listOrders(): Order[] {
   return db
     .prepare("SELECT * FROM orders ORDER BY created_at DESC")
@@ -133,7 +138,7 @@ export function markOrderPaid(id: string): Order | undefined {
   if (!order || order.status !== "aguardando_pagamento") return order;
   const now = new Date().toISOString();
   db.prepare(
-    `UPDATE orders SET status = 'aprovado', pago_at = @now WHERE id = @id`
+    `UPDATE orders SET status = 'aprovado', pago_at = @now WHERE id = @id AND status <> 'estornado'`
   ).run({ id, now });
   return getOrderById(id);
 }
@@ -158,7 +163,7 @@ export function blockOrder(id: string, nota?: string) {
   db.prepare(
     `UPDATE orders SET status = 'bloqueado', admin_nota = @nota,
        active_session_id = NULL, active_session_created_at = NULL
-     WHERE id = @id`
+     WHERE id = @id AND status <> 'estornado'`
   ).run({ id, nota: nota ?? null });
   return getOrderById(id);
 }
@@ -168,13 +173,9 @@ export function blockOrder(id: string, nota?: string) {
  * payment the webhook missed. The buyer still logs in via /acessar with
  * their email afterwards; this doesn't create a session by itself. */
 export function grantAccess(id: string) {
-  const order = getOrderById(id);
-  if (!order) return undefined;
   const now = new Date().toISOString();
-  db.prepare(
-    `UPDATE orders SET status = 'aprovado', pago_at = @now WHERE id = @id`
-  ).run({ id, now });
-  return getOrderById(id);
+  return db.prepare(`UPDATE orders SET status='aprovado',pago_at=?
+    WHERE id=? AND status<>'estornado' RETURNING *`).get(now,id) as Order | undefined;
 }
 
 // --- Access codes (email OTP) and single active session ---
@@ -223,6 +224,7 @@ export type OtpVerifyResult =
  * issues a new session for its order — overwriting any previously active
  * session, so a second successful login elsewhere kicks the first one out. */
 export function verifyOtpAndCreateSession(email: string, codeHash: string): OtpVerifyResult {
+  return db.transaction((): OtpVerifyResult => {
   const otp = db
     .prepare(
       "SELECT * FROM otp_codes WHERE email = ? AND consumed_at IS NULL ORDER BY created_at DESC LIMIT 1"
@@ -249,6 +251,9 @@ export function verifyOtpAndCreateSession(email: string, codeHash: string): OtpV
   }
 
   const now = new Date().toISOString();
+  const anchor = getOrderById(otp.order_id);
+  if (!anchor || anchor.status !== "aprovado" || anchor.email.trim().toLowerCase() !== email.trim().toLowerCase()) return {ok:false,reason:"no_code"};
+  db.prepare("UPDATE orders SET active_session_id = NULL, active_session_created_at = NULL WHERE lower(trim(email)) = ? AND active_session_id IS NOT NULL").run(email.trim().toLowerCase());
   const sessionId = randomUUID();
   db.prepare("UPDATE otp_codes SET consumed_at = @now WHERE id = @id").run({
     id: otp.id,
@@ -259,10 +264,30 @@ export function verifyOtpAndCreateSession(email: string, codeHash: string): OtpV
   ).run({ sessionId, now, orderId: otp.order_id });
 
   return { ok: true, order: getOrderById(otp.order_id)! };
+  }).immediate();
 }
 
 export function clearActiveSession(orderId: string) {
   db.prepare(
     `UPDATE orders SET active_session_id = NULL, active_session_created_at = NULL WHERE id = @orderId`
   ).run({ orderId });
+}
+
+/** Atomic comparison-and-set. Exactly one worker receives the changed order. */
+export function applyVerifiedPixStatus(orderId: string, paymentId: string, current: "received" | "overdue" | "deleted" | "refunded"): Order | undefined {
+  const now = new Date().toISOString();
+  switch(current) {
+    case "received":
+      return db.prepare(`UPDATE orders SET status='aprovado',pago_at=?
+        WHERE id=? AND asaas_payment_id=? AND status IN ('aguardando_pagamento','expirado') RETURNING *`).get(now,orderId,paymentId) as Order | undefined;
+    case "overdue":
+      return db.prepare(`UPDATE orders SET status='expirado'
+        WHERE id=? AND asaas_payment_id=? AND status='aguardando_pagamento' RETURNING *`).get(orderId,paymentId) as Order | undefined;
+    case "deleted":
+      return db.prepare(`UPDATE orders SET status='cancelado'
+        WHERE id=? AND asaas_payment_id=? AND status IN ('aguardando_pagamento','expirado') RETURNING *`).get(orderId,paymentId) as Order | undefined;
+    case "refunded":
+      return db.prepare(`UPDATE orders SET status='estornado',active_session_id=NULL,active_session_created_at=NULL
+        WHERE id=? AND asaas_payment_id=? AND status<>'estornado' RETURNING *`).get(orderId,paymentId) as Order | undefined;
+  }
 }

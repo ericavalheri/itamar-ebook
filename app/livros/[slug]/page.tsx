@@ -1,11 +1,21 @@
+export const dynamic = "force-dynamic";
+import ComprarForm from "@/app/comprar/[slug]/ComprarForm";
 import AuthorProfile from "@/components/AuthorProfile";
-import { salesEnabled } from "@/lib/sales";
+import { getCheckoutProduct } from "@/lib/checkout-catalog";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getCatalogProductBySlug } from "@/lib/products";
 import { formatMoney } from "@/lib/money";
 import { ICONS } from "@/components/icons";
 import BookCover from "@/components/BookCover";
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const product = getCatalogProductBySlug((await params).slug);
+  return product
+    ? { title: `${product.titulo} | Honestamente Itamar`, description: product.descricaoCurta }
+    : { title: "E-book não encontrado | Honestamente Itamar" };
+}
 
 export default async function LivroPage({
   params,
@@ -16,7 +26,7 @@ export default async function LivroPage({
   const product = getCatalogProductBySlug(slug);
   if (!product) notFound();
 
-  const canBuy = !product.catalogOnly && salesEnabled();
+  const canBuy = Boolean(await getCheckoutProduct(slug));
 
   return (
     <main>
@@ -35,7 +45,7 @@ export default async function LivroPage({
             </p>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
               {canBuy ? (
-                <Link href={`/comprar/${product.slug}`} className="btn btn-primary">
+                <Link href="#comprar" className="btn btn-primary">
                   Quero o e-book — {formatMoney(product.precoCentavos)}
                 </Link>
               ) : (
@@ -90,21 +100,19 @@ export default async function LivroPage({
         </div>
       </section>
 
-      {canBuy && <section className="container" style={{ padding: "0 20px 64px" }}>
+      {canBuy && <section id="comprar" aria-labelledby="comprar-titulo" className="container" style={{ padding: "0 20px 64px", scrollMarginTop: 92 }}>
         <div className="card" style={{ padding: 28, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
           <div>
             <span className="label">Como funciona a compra</span>
-            <h3 className="font-display" style={{ margin: "10px 0 6px", color: "var(--navy)" }}>
-              Cadastro, Pix e liberação automática
-            </h3>
+            <h2 id="comprar-titulo" className="font-display" style={{ margin: "10px 0 6px", color: "var(--navy)" }}>
+              Comprar com Pix
+            </h2>
             <p style={{ color: "var(--muted)", maxWidth: 520 }}>
               Você faz seu cadastro e paga com o QR Code Pix gerado na hora. Assim que o
               pagamento é confirmado, seu acesso individual é liberado automaticamente.
             </p>
           </div>
-          <Link href={`/comprar/${product.slug}`} className="btn btn-primary">
-            Começar meu cadastro
-          </Link>
+          <ComprarForm produto={product.slug} />
         </div>
       </section>}
 

@@ -1,7 +1,7 @@
 import { createOtpRequest } from "./orders";
 import { generateOtpCode, hashOtpCode, OTP_TTL_MINUTES } from "./otp";
 import { sendPurchaseConfirmedEmail } from "./email";
-import { getProductBySlug } from "./products";
+import { getCatalogProductBySlug } from "./products";
 import type { Order } from "./db";
 
 /** Sends the buyer a first access code as soon as their order is approved,
@@ -10,12 +10,13 @@ import type { Order } from "./db";
  * admin action that called it — the buyer can still request a new code at
  * /acessar, same as any other login. */
 export async function notifyOrderApproved(order: Order) {
-  const product = getProductBySlug(order.produto);
+  const product = getCatalogProductBySlug(order.produto);
   const code = generateOtpCode();
-  createOtpRequest(order.id, order.email, hashOtpCode(code), OTP_TTL_MINUTES);
+  const email = order.email.trim().toLowerCase();
+  createOtpRequest(order.id, email, hashOtpCode(code), OTP_TTL_MINUTES);
   try {
-    await sendPurchaseConfirmedEmail(order.email, product?.titulo ?? order.produto, code);
-  } catch (err) {
-    console.error("Falha ao enviar e-mail de confirmação de compra:", err);
+    await sendPurchaseConfirmedEmail(email, product?.titulo ?? order.produto, code);
+  } catch {
+    console.error("Falha ao enviar e-mail de confirmação de compra.");
   }
 }

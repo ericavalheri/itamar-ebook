@@ -1,14 +1,19 @@
-import { adminLoginConfigured } from "@/lib/sales";
+import { redirect } from "next/navigation";
+import { adminIdentity } from "@/lib/admin-accounts";
 import LoginForm from "./LoginForm";
+import s from "../admin-dashboard.module.css";
 
-export default function AdminLoginPage() {
-  return (
-    <main className="container" style={{ padding: "80px 20px" }}>
-      <div style={{ textAlign: "center", marginBottom: 24 }}>
-        <span className="label">Painel administrativo</span>
-        <h1 style={{ margin: "12px 0 0" }}>Itamar E-book</h1>
-      </div>
-      {adminLoginConfigured() ? <LoginForm /> : <p>Painel ainda não configurado. O acesso administrativo permanece desativado.</p>}
-    </main>
-  );
+export const dynamic = "force-dynamic";
+
+export default async function AdminLoginPage() {
+  if (await adminIdentity()) redirect("/admin");
+  return <main className={s.login}>
+    <div className={s.loginCard}>
+      <p className={s.kicker}>Honestamente, Itamar</p>
+      <h1>Acesso da equipe</h1>
+      <p>Entre com sua conta administrativa individual.</p>
+      <LoginForm />
+      <p className={s.loginFoot}>Comprou um e-book? Use a <a href="/acessar">área de leitura</a>.</p>
+    </div>
+  </main>;
 }

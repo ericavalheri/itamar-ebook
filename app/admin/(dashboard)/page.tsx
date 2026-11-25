@@ -1,36 +1,22 @@
-import { listOrders } from "@/lib/orders";
-import { PRODUCTS } from "@/lib/products";
-import OrdersTable from "./OrdersTable";
-import LogoutButton from "./LogoutButton";
-import ManualOrderForm from "./ManualOrderForm";
+import { redirect } from "next/navigation";
+import { adminIdentity, listAdminOrders, listAdminTeam } from "@/lib/admin-accounts";
+import AdminDashboard from "./AdminDashboard";
 
 export const dynamic = "force-dynamic";
 
-export default function AdminDashboardPage() {
-  const orders = listOrders();
-  const aguardando = orders.filter((o) => o.status === "aguardando_pagamento").length;
+const tabs = ["overview", "orders", "users", "money"] as const;
+export type AdminTab = (typeof tabs)[number];
 
-  return (
-    <main className="container" style={{ padding: "40px 20px 80px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
-        <div>
-          <span className="label">Painel administrativo</span>
-          <h1 style={{ margin: "12px 0 4px" }}>Compradores</h1>
-          <p style={{ color: "var(--muted)", margin: 0 }}>
-            O acesso é liberado automaticamente pelo Asaas quando o Pix é confirmado.{" "}
-            {aguardando > 0
-              ? `${aguardando} pedido(s) aguardando pagamento.`
-              : "Nenhum pedido aguardando pagamento."}
-          </p>
-        </div>
-        <LogoutButton />
-      </div>
-      <div style={{ marginTop: 24 }}>
-        <ManualOrderForm products={PRODUCTS} />
-      </div>
-      <div className="card" style={{ padding: 20, marginTop: 20 }}>
-        <OrdersTable orders={orders} />
-      </div>
-    </main>
-  );
+export default async function AdminDashboardPage({searchParams}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const identity = await adminIdentity();
+  if (!identity) redirect("/admin/login");
+  const params = await searchParams;
+  const tab = tabs.find((value) => value === params.tab) ?? "overview";
+  const orders = await listAdminOrders();
+  const team = tab === "users" && identity.role === "owner" ? await listAdminTeam() : [];
+  return <AdminDashboard tab={tab} identity={identity} orders={orders} team={team}
+    filter={typeof params.status === "string" ? params.status : ""}
+    page={typeof params.page === "string" ? params.page : "1"} />;
 }

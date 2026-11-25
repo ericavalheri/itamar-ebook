@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getOrderById, STATUS_LABEL, formatMoney } from "@/lib/orders";
-import { getProductBySlug } from "@/lib/products";
+import { getCatalogProductBySlug } from "@/lib/products";
 import CopyPixCode from "./CopyPixCode";
 import PixStatusWatcher from "./PixStatusWatcher";
 
@@ -15,7 +15,7 @@ export default async function PedidoPage({
   const { id } = await params;
   const order = getOrderById(id);
   if (!order) notFound();
-  const product = getProductBySlug(order.produto);
+  const product = getCatalogProductBySlug(order.produto);
 
   return (
     <main className="container" style={{ padding: "48px 20px 80px" }}>
@@ -87,6 +87,13 @@ export default async function PedidoPage({
           <p style={{ color: "var(--muted)" }}>
             {order.admin_nota || "Este pedido foi cancelado. Fale com a equipe se precisar de ajuda."}
           </p>
+        </div>
+      )}
+
+      {order.status === "estornado" && (
+        <div className="card" style={{ padding:24, marginBottom:20 }}>
+          <h2>Pagamento estornado</h2>
+          <p>O estorno foi registrado. Este pedido não dá mais acesso ao e-book.</p>
         </div>
       )}
 

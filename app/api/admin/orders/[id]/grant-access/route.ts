@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isAdminAuthenticated } from "@/lib/auth";
+import { requireOwnerMutation } from "@/lib/admin-accounts";
 import { getOrderById, grantAccess } from "@/lib/orders";
 import { notifyOrderApproved } from "@/lib/purchase-notify";
 
 export const runtime = "nodejs";
 
 export async function POST(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
-  }
+  const denial = await requireOwnerMutation(req);
+  if (denial) return denial;
   const { id } = await params;
   const existing = getOrderById(id);
   if (!existing) {
@@ -19,5 +18,5 @@ export async function POST(
   }
   const order = grantAccess(id);
   if (order) await notifyOrderApproved(order);
-  return NextResponse.json({ order });
+  return NextResponse.json({ ok: true }, { headers: { "Cache-Control": "private, no-store" } });
 }
