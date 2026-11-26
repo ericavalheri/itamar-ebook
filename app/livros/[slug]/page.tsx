@@ -183,7 +183,7 @@ export default async function LivroPage({
             <span className="label">E-book digital · Pagamento único</span>
             <h2 id="ebook-value-title">O que você leva por {formatMoney(product.precoCentavos)}?</h2>
             <p>{copy.valueLine}</p>
-            <p className="ebook-value-price">{formatMoney(product.precoCentavos)} <span>por este volume</span></p>
+            <p className="ebook-value-price"><span>De <s>R$ 147</s> por</span> {formatMoney(product.precoCentavos)}</p>
             {canBuy ? <Link className="btn btn-primary" href="#comprar">Quero o guia por {formatMoney(product.precoCentavos)}</Link> : <p className="ebook-availability">Vendas em breve. O exemplo pode ser consultado agora, sem cadastro.</p>}
           </div>
           <ul>{copy.valueItems.map(item => <li key={item}>{item}</li>)}</ul>
