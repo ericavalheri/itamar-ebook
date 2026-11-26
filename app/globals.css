@@ -525,3 +525,20 @@ th {
 .author-book-shell {padding:0 20px 2.5rem;}
 @media (max-width:480px) {.author-profile--book {grid-template-columns:minmax(0,5.25rem) minmax(0,1fr);}}
 @media (max-width:330px) {.author-profile--book {grid-template-columns:1fr;} .author-profile--book img {max-width:5.25rem;}}
+
+/* E-book sales pages: lead with the reader's question, then show a concrete example. */
+.ebook-sales-product { margin: 0 0 12px; font-size: .93rem; font-weight: 700; color: #174b49; }
+.ebook-sales-product span { font-weight: 500; }
+.ebook-sales-intro { max-width: 56ch; font-size: 1.05rem; line-height: 1.6; margin: 0 0 16px; color: #354458; }
+.ebook-sales-benefits { padding-left: 1.27em; margin: 0 0 24px; display: grid; gap: 7px; color: #183c39; font-size: .9rem; }
+.ebook-sales-benefits li::marker { color: #0c6661; }
+.ebook-sales-preview { padding-top: 48px; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.05fr); align-items: center; gap: clamp(24px,5vw,62px); scroll-margin-top: 30px; }
+.ebook-sales-preview h2 { max-width: 27ch; margin: 10px 0; font-size: clamp(1.55rem,3vw,2.45rem); line-height: 1.13; color: var(--navy); }
+.ebook-sales-preview p { max-width: 39ch; margin: 0; line-height: 1.6; }
+.ebook-sales-preview ol { background: #133631; color: #fffaf1; padding: 10px clamp(18px,3vw,28px); margin: 0; border-radius: 10px; list-style: none; }
+.ebook-sales-preview li { display: grid; grid-template-columns: 2em minmax(0,1fr); gap: 10px; align-items: baseline; padding: 15px 0; line-height: 1.45; }
+.ebook-sales-preview li+li { border-top: 1px solid #ffffff30; }
+.ebook-sales-preview li span { color: #f1d18b; font-weight: 700; font-size: .84rem; }
+.ebook-sales-note { padding-bottom: 24px; color: #425166; font-size: .875rem; }
+.ebook-sales-note p { max-width: 75ch; }
+@media(max-width:700px) { .ebook-sales-preview { grid-template-columns: 1fr; padding-top: 36px; } }
