@@ -13,7 +13,7 @@ import BookCover from "@/components/BookCover";
 const salesCopy: Record<string, {
   headline: string; intro: string; takeaways: string[];
   searchTitle: string; searchDescription: string;
-  sampleRows: [string, string][]; sampleNote: string;
+  sampleRows: [string, string][]; sampleNote: string; valueItems: string[]; valueLine: string;
   faq: [string, string][]; source: string; sourceLabel: string;
   scenario: string; steps: string[]; feature: string;
 }> = {
@@ -22,6 +22,8 @@ const salesCopy: Record<string, {
     searchTitle: "Como conferir o adicional de periculosidade no holerite",
     searchDescription: "Recebe adicional de periculosidade? Veja um holerite fictício, entenda o que conferir na base de cálculo e conheça o guia com simulador e horas extras.",
     sampleRows: [["Salário-base do exemplo", "R$ 2.500,00"], ["Percentual usado neste exemplo", "30%"], ["Adicional de periculosidade", "R$ 750,00"]],
+    valueItems: ["Um modelo de holerite comentado para localizar o adicional e entender de onde vem o número.", "Uma calculadora para simular o adicional e comparar o efeito nas horas extras.", "Um roteiro em cinco passos para conferir o pagamento e preparar sua conversa com o departamento pessoal."],
+    valueLine: "Em vez de juntar uma calculadora, um vídeo e vários artigos, você tem um passo a passo para sair do número no holerite com perguntas específicas sobre o seu pagamento.",
     sampleNote: "Nesta situação fictícia, a base usada é R$ 2.500,00. Antes de comparar com o seu holerite, confira qual base a folha usou e se você está olhando o mesmo mês. O exemplo não determina quanto você tem direito a receber.",
     faq: [
       ["Como calcular o adicional de periculosidade?", "Na regra geral, aplica-se 30% sobre o salário-base. A sua situação pode ter particularidades. O guia ajuda a identificar o que você usou na simulação e o que a folha considerou."],
@@ -41,6 +43,8 @@ const salesCopy: Record<string, {
     searchTitle: "Adicional de insalubridade: como conferir o grau e o holerite",
     searchDescription: "Seu holerite mostra adicional de insalubridade? Entenda o que conferir sobre o grau, a base de cálculo e o valor lançado, com um exemplo comentado.",
     sampleRows: [["Rubrica fictícia", "Adic. insalubridade"], ["Grau informado no exemplo", "Médio (20%)"], ["Informação que falta para conferir o valor", "Base de cálculo"]],
+    valueItems: ["Uma explicação simples do que é avaliado na exposição no trabalho.", "Um guia para distinguir os graus mínimo, médio e máximo, sem confundir grau com base de cálculo.", "Orientações para localizar o adicional e saber o que pedir ao departamento pessoal quando faltam informações."],
+    valueLine: "Você separa o que já aparece no holerite do que ainda precisa confirmar. Assim não depende de chutar o grau ou comparar só o valor pago a um colega.",
     sampleNote: "Ver 20% não basta para descobrir o valor esperado. São duas perguntas diferentes: qual grau foi reconhecido e sobre qual base o percentual foi aplicado?",
     faq: [
       ["Como saber se o grau é mínimo, médio ou máximo?", "O holerite mostra o que foi lançado. O enquadramento depende das condições reais de exposição e da avaliação técnica segundo a NR-15. O guia ajuda a separar essas duas informações."],
@@ -101,12 +105,13 @@ export default async function LivroPage({
                   Quero conferir meu adicional · {formatMoney(product.precoCentavos)}
                 </Link>
               ) : (
-                <a className="btn btn-primary" href={copy ? "#na-pratica" : "#recursos"}>{copy ? "Ver exemplo de holerite" : "Conhecer o conteúdo"}</a>
+                <a className="btn btn-primary" href={copy ? "#investimento" : "#recursos"}>Veja o que você leva por {formatMoney(product.precoCentavos)}</a>
               )}
               <span style={{ fontSize: "0.86rem", color: "var(--muted)" }}>
                 {canBuy ? "Acesso liberado após confirmação do pagamento via Pix" : `Vendas em breve · ${formatMoney(product.precoCentavos)}`}
               </span>
             </div>
+            {copy && <a className="ebook-soft-link" href="#na-pratica">Ver exemplo de holerite ↓</a>}
           </div>
           <div style={{ position: "relative" }}>
             <div
@@ -172,6 +177,30 @@ export default async function LivroPage({
         </div>
       </section>
 
+      {copy && <div className="container ebook-value-shell">
+        <section id="investimento" className="ebook-value" aria-labelledby="ebook-value-title">
+          <div>
+            <span className="label">E-book digital · Pagamento único</span>
+            <h2 id="ebook-value-title">O que você leva por {formatMoney(product.precoCentavos)}?</h2>
+            <p>{copy.valueLine}</p>
+            <p className="ebook-value-price">{formatMoney(product.precoCentavos)} <span>por este volume</span></p>
+            {canBuy ? <Link className="btn btn-primary" href="#comprar">Quero o guia por {formatMoney(product.precoCentavos)}</Link> : <p className="ebook-availability">Vendas em breve. O exemplo pode ser consultado agora, sem cadastro.</p>}
+          </div>
+          <ul>{copy.valueItems.map(item => <li key={item}>{item}</li>)}</ul>
+        </section>
+      </div>}
+
+      <section className="container ebook-next" aria-labelledby="ebook-next-title">
+        <span className="label">Próximos passos</span>
+        <h2 id="ebook-next-title" className="font-display">A conta não bateu. A quem recorrer?</h2>
+        <ol>
+          <li><strong>Comece pelo departamento pessoal.</strong> Anote o mês e o valor lançado. Peça a base de cálculo, o percentual e uma explicação do lançamento. No caso da insalubridade, pergunte também como o grau foi identificado.</li>
+          <li><strong>Se a dúvida continuar, busque orientação.</strong> O sindicato da sua categoria ou um profissional de direito do trabalho pode orientar sobre o seu caso. Guarde holerites e respostas sem expor seus dados em redes sociais.</li>
+          <li><strong>Para falar com o Ministério do Trabalho:</strong> o <a href="tel:158">Alô Trabalho (158)</a> informa sobre os serviços. Há também um <a href="https://denuncia.sit.trabalho.gov.br/home">canal oficial para denunciar possíveis irregularidades</a>.</li>
+        </ol>
+        {copy && <a className="ebook-soft-link" href={canBuy ? "#comprar" : "#investimento"}>{canBuy ? "Quero o guia para conferir meu holerite" : "Rever o que está incluído no guia"} ↑</a>}
+      </section>
+
       {copy && <section className="container ebook-faq" aria-labelledby="ebook-faq-title">
         <h2 id="ebook-faq-title" className="font-display">Dúvidas de quem está conferindo o holerite</h2>
         {copy.faq.map(([question, answer]) => (
@@ -205,11 +234,17 @@ export default async function LivroPage({
 
       <div className="container author-book-shell"><AuthorProfile variant="book" /></div>
 
-      <div className="container" style={{ padding: "0 20px 48px" }}>
-        <Link href="/" style={{ fontSize: "0.9rem", color: "var(--muted)" }}>
-          ← Voltar para a biblioteca
-        </Link>
-      </div>
+      <footer className="ebook-footer">
+        <div className="container ebook-footer-inner">
+          <div><strong>Honestamente, Itamar.</strong><p>Guias digitais para entender o que aparece no seu holerite.</p></div>
+          <nav aria-label="Links do rodapé">
+            <Link href="/#biblioteca">Biblioteca</Link>
+            <Link href="/acessar">Acesso do leitor</Link>
+            <a href="#investimento">O que está incluído</a>
+            <a href="https://www.gov.br/trabalho-e-emprego/pt-br/noticias-e-conteudo/2026/julho/saiba-como-acessar-os-canais-de-atendimento-do-ministerio-do-trabalho-e-emprego">Orientação oficial do MTE</a>
+          </nav>
+        </div>
+      </footer>
     </main>
   );
 }
