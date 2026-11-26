@@ -15,7 +15,7 @@ const salesCopy: Record<string, {
   scenario: string; steps: string[]; feature: string;
 }> = {
   "adicional-periculosidade": {
-    headline: "Você encara o risco. No holerite, a conta faz sentido?",
+    headline: "Meu adicional veio certo?",
     intro: "Se você trabalha em uma atividade de risco, já deve ter se perguntado se o adicional se aplica ao seu caso ou se o valor no holerite está certo. Este e-book ajuda você a sair do achismo, com exemplos, uma calculadora e um roteiro para conferir o que recebeu.",
     takeaways: ["Entenda o que vale conferir no seu trabalho", "Simule o adicional e as horas extras", "Compare seu holerite com um exemplo comentado"],
     scenario: "O adicional apareceu no holerite, mas você não sabe de onde saiu aquele valor. Por onde começar?",
@@ -23,7 +23,7 @@ const salesCopy: Record<string, {
     feature: "Não é só um texto para ler. É um guia para abrir ao lado do holerite.",
   },
   "adicional-insalubridade": {
-    headline: "O adicional está no holerite. Mas por que esse grau?",
+    headline: "Por que meu adicional veio nesse grau?",
     intro: "Quem trabalha exposto a agentes nocivos nem sempre entende o que foi considerado na hora de definir o adicional. Este volume foi pensado para ajudar você a entender os critérios, distinguir os graus e saber o que olhar no contracheque.",
     takeaways: ["Entenda por que a exposição no trabalho importa", "Veja o que distingue os graus mínimo, médio e máximo", "Saiba onde olhar no holerite e o que perguntar"],
     scenario: "Você e um colega fazem tarefas parecidas, mas o adicional não é igual. O que vale conferir antes de tirar uma conclusão?",

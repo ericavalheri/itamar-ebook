@@ -542,3 +542,5 @@ th {
 .ebook-sales-note { padding-bottom: 24px; color: #425166; font-size: .875rem; }
 .ebook-sales-note p { max-width: 75ch; }
 @media(max-width:700px) { .ebook-sales-preview { grid-template-columns: 1fr; padding-top: 36px; } }
+.ebook-sales-preview li { counter-increment: step; }
+@media (prefers-reduced-motion: reduce) { html:has(.ebook-sales-preview) { scroll-behavior: auto; } }
