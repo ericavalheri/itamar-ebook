@@ -1,4 +1,5 @@
 import { ownerPixPilot, PILOT_VOLUME } from "@/lib/owner-pix-pilot";
+import { PILOT_CENTAVOS, PILOT_PERCENT } from "@/lib/coupons";
 import Link from "next/link";
 import { PREVIEW_MESSAGE } from "@/lib/sales";
 import { getCheckoutProduct } from "@/lib/checkout-catalog";
@@ -22,7 +23,7 @@ export default async function ComprarPage({
     <main className="container" style={{padding:"48px 20px 80px"}}>
       <span className="label">Teste privado · apenas proprietário</span>
       <h1>{product.titulo}</h1>
-      <p>Pix real de <strong>R$ 5,32</strong>, com cupom de 86% e limite de um uso. As vendas públicas continuam fechadas.</p>
+      <p>Pix real de <strong>{formatMoney(PILOT_CENTAVOS)}</strong>, com cupom de {PILOT_PERCENT}% e limite de um uso. As vendas públicas continuam fechadas.</p>
       <ComprarForm produto={product.slug} ownerPilot />
     </main>
   );
