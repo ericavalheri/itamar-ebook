@@ -3,7 +3,6 @@ import type { adminIdentity, listAdminOrders, listAdminTeam } from "@/lib/admin-
 import { formatMoney, STATUS_LABEL } from "@/lib/money";
 import { PRODUCTS } from "@/lib/products";
 import type { AdminTab } from "./page";
-import AdminLogout from "./AdminLogout";
 import ManualOrderForm from "./ManualOrderForm";
 import AdminOrderActions from "./AdminOrderActions";
 import AdminTeamActions from "./AdminTeamActions";
@@ -49,18 +48,7 @@ export default function AdminDashboard({tab,identity,orders,team,filter,page}:{t
   const max=Math.max(1,...days.map(([,v])=>v.total));
   const buyers=new Map<string,{name:string;books:Set<string>}>();
   if(owner&&tab==="users") for(const o of orders){if(!o.email)continue;const key=o.email.trim().toLowerCase();if(!key)continue;const old=buyers.get(key)??{name:o.nome,books:new Set<string>()};if(o.status==="aprovado")old.books.add(o.produto);buyers.set(key,old);}
-  return <div className={s.shell}>
-    <a className={s.skip} href="#admin-main">Pular para o conteúdo</a>
-    <aside className={s.sidebar}>
-      <div className={s.brand}><span>Honestamente, Itamar<span className={s.dot}>.</span></span><small>ADMINISTRAÇÃO DA BIBLIOTECA</small></div>
-      <nav className={s.nav} aria-label="Menu da administração">
-        {(Object.keys(label) as AdminTab[]).map(id=><Link key={id} href={href(id)} prefetch={false} aria-current={id===tab?"page":undefined}>{label[id]}</Link>)}
-        {owner && <Link href="/admin/coupons" prefetch={false}>Cupons</Link>}
-      </nav>
-      <div className={s.account}><small>{owner?"Administração":"Operação"}</small><span>{identity.email}</span><AdminLogout/></div>
-    </aside>
-    <div className={s.workspace}><header className={s.top}><span>Painel da biblioteca</span><span className={s.badge}>Área restrita</span></header>
-      <main className={s.content} id="admin-main" tabIndex={-1}>
+  return <>
         <header className={s.heading}><p className={s.kicker}>GESTÃO DA BIBLIOTECA</p><h1>{label[tab]}</h1><p>{intro[tab]}</p></header>
         {(tab==="overview"||tab==="money")&&<>
           <Metrics received={recorded} pending={pending} total={orders.length}/>
@@ -97,7 +85,5 @@ export default function AdminDashboard({tab,identity,orders,team,filter,page}:{t
             {!owner?<p>Os dados dos leitores são restritos à administração.</p>:buyers.size?<div className={s.table} role="region" aria-label="Tabela de leitores" tabIndex={0}><table><thead><tr><th scope="col">Leitor</th><th scope="col">E-mail</th><th scope="col">Títulos liberados</th></tr></thead><tbody>{Array.from(buyers.entries()).slice(0,50).map(([email,b])=><tr key={email}><td>{b.name||"Nome não informado"}</td><td>{email}</td><td>{b.books.size}</td></tr>)}</tbody></table>{buyers.size>50&&<p>Mostrando 50 de {buyers.size} leitores. Consulte Pedidos para ver os demais registros.</p>}</div>:<Empty title="Nenhum leitor cadastrado" body="Os compradores aparecem aqui separados da equipe."/>}
           </section>
         </>}
-      </main>
-    </div>
-  </div>;
+  </>;
 }

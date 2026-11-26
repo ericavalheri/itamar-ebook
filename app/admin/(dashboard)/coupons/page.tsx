@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { adminIdentity } from "@/lib/admin-accounts";
 import { listCoupons } from "@/lib/coupons";
 import styles from "./coupon.module.css";
+import s from "../../admin-dashboard.module.css";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 const notices: Record<string,string> = {
@@ -21,28 +21,30 @@ export default async function CouponsPage({searchParams}: {searchParams:Promise<
   const now = new Date().toISOString();
   const today = new Intl.DateTimeFormat("sv-SE",{timeZone:"America/Sao_Paulo",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
   return (
-    <main className={styles.shell}>
-      <Link href="/admin" className={styles.back}>← Voltar ao painel</Link>
-      <h1>Cupons de desconto</h1>
-      <p>Crie um código com percentual, validade e limite de usos. O valor mínimo após aplicar o cupom é R$ 5,00.</p>
+    <>
+      <header className={s.heading}>
+        <p className={s.kicker}>Gestão da biblioteca</p>
+        <h1>Cupons de desconto</h1>
+        <p>Crie um código com percentual, validade e limite de usos. O valor mínimo após aplicar o cupom é R$ 5,00.</p>
+      </header>
       {notice && <p role="status" className={styles.notice}>{notice}</p>}
-      <section className={styles.card}>
+      <section className={s.card}>
         <h2>Novo cupom</h2>
-        <form className={styles.form} action="/api/admin/coupons" method="post">
+        <form className={`${s.form} ${styles.form}`} action="/api/admin/coupons" method="post">
           <input type="hidden" name="action" value="criar" />
           <label>Código <input required name="code" minLength={3} maxLength={32} pattern="[A-Za-z0-9][A-Za-z0-9_\\-]{2,31}" placeholder="Ex.: LEITORES10" /></label>
           <label>Desconto (%) <input required type="number" name="percentOff" min={1} max={90} step={1} defaultValue={10} /></label>
           <label>Limite de usos <input required type="number" name="maxUses" min={1} max={10000} step={1} defaultValue={25} /></label>
           <label>Começa em <input required type="date" name="startsOn" defaultValue={today} /></label>
           <label>Válido até <input required type="date" name="endsOn" min={today} /></label>
-          <button type="submit">Criar cupom</button>
+          <button className={s.primary} type="submit">Criar cupom</button>
         </form>
         <p className={styles.note}>Validade até o fim do dia selecionado, no horário de Brasília.</p>
       </section>
-      <section className={styles.card}>
+      <section className={s.card}>
         <h2>Cupons recentes</h2>
         <p className={styles.note}>O uso é reservado ao gerar o Pix, mesmo antes do pagamento.</p>
-        {rows.length === 0 ? <p>Nenhum cupom cadastrado.</p> : <div className={styles.scroll}><table>
+        {rows.length === 0 ? <p>Nenhum cupom cadastrado.</p> : <div className={`${s.table} ${styles.scroll}`} role="region" aria-label="Tabela de cupons" tabIndex={0}><table>
           <thead><tr>{["Código","Desconto","Validade","Usos reservados","Situação","Ação"].map(h=><th key={h} scope="col">{h}</th>)}</tr></thead>
           <tbody>{rows.map(c=><tr key={c.code}>
             <th scope="row">{c.code}</th><td>{c.percent_off}%</td>
@@ -56,6 +58,6 @@ export default async function CouponsPage({searchParams}: {searchParams:Promise<
             </form> : "Sem ação"}</td>
           </tr>)}</tbody></table></div>}
       </section>
-    </main>
+    </>
   );
 }

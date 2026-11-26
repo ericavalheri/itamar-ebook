@@ -52,3 +52,42 @@
 .skip:focus {top:8px;background:white;color:var(--ink);padding:9px;z-index:3}
 @media(max-width:780px){.shell{grid-template-columns:1fr}.sidebar{min-height:auto;position:static;gap:12px;padding:14px}.nav{display:flex;flex-wrap:wrap}.nav a{padding:.4rem .5rem}.account{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}.account small{margin:0}.logout{padding:4px 7px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.grid .card:last-child{grid-column:span 2}}
 @media(max-width:350px){.grid{grid-template-columns:1fr}.grid .card:last-child{grid-column:auto}}
+
+/* Admin only: light product UI, independent from the editorial book styles. */
+.shell,.login {
+  --ink:#1c2b38;--muted:#4e6070;--paper:#f5f7fa;--line:#dfe6eb;--green:#146457;
+  font-family:var(--font-sans),system-ui,sans-serif;font-weight:400;
+}
+.shell h1,.shell h2,.shell h3,.login h1 {
+  font-family:var(--font-sans),system-ui,sans-serif;letter-spacing:-.035em;
+}
+.heading h1,.login h1 {font-size:clamp(1.75rem,3vw,2.5rem);font-weight:530}
+.heading p,.card p,.login p {font-size:.92rem}
+.heading .kicker,.card .kicker,.login .kicker {font-weight:550;letter-spacing:.1em}
+.sidebar {background:#fff;color:var(--ink);border-inline-end:1px solid var(--line);padding:26px 16px}
+.brand {padding:2px 9px 17px;border-bottom:1px solid var(--line);font:550 1.06rem/1.35 var(--font-sans),system-ui,sans-serif;letter-spacing:-.035em}
+.dot {color:var(--green)}
+.brand small,.account small {color:var(--muted);font-weight:500;font-size:.72rem;letter-spacing:.025em}
+.nav {gap:4px}
+.nav a,.logout {display:flex;align-items:center;gap:10px;color:var(--muted);font-weight:490}
+.nav a:hover,.nav a[aria-current=page],.logout:hover {background:#e8f3f0;color:#155447}
+.nav a[aria-current=page]{font-weight:570}
+.nav svg {flex:none}
+.account {padding:10px 8px 0;border-top:1px solid var(--line);font-size:.78rem}
+.logout {border-color:var(--line);min-height:36px;margin-top:4px}
+.sideError {color:#8d2b25}
+.top {color:var(--muted);font-size:.84rem;min-height:60px}
+.content {padding:clamp(18px,3.4vw,42px)}
+.card {border-radius:13px;box-shadow:0 2px 5px #233b4d08}
+.card h2 {font-size:1.05rem;font-weight:580;letter-spacing:-.02em}
+.amount {font-weight:560;font-variant-numeric:tabular-nums;letter-spacing:-.045em}
+.badge,.form label,.filters a,.actions button,.primary {font-weight:550}
+.table th {font-weight:550;letter-spacing:.01em}
+.login {background:var(--paper)}
+@media (max-width:780px) {
+  .sidebar {border-inline-end:0;border-bottom:1px solid var(--line);padding:14px}
+  .brand {padding:0 0 8px}
+  .nav a {min-height:40px}
+  .account {padding:8px 0 0}
+  .top {min-height:44px}
+}
