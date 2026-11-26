@@ -544,3 +544,17 @@ th {
 @media(max-width:700px) { .ebook-sales-preview { grid-template-columns: 1fr; padding-top: 36px; } }
 .ebook-sales-preview li { counter-increment: step; }
 @media (prefers-reduced-motion: reduce) { html:has(.ebook-sales-preview) { scroll-behavior: auto; } }
+
+.ebook-example { min-width: 0; background: #fffefb; border: 1px solid #d0d8d0; border-radius: 10px; padding: clamp(18px,3vw,30px); }
+.ebook-example h3 { color: #133631; margin: 0 0 12px; font-size: 1.4rem; }
+.ebook-example dl { margin: 0 0 14px; }
+.ebook-example dl>div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; padding: 10px 0; border-block-end: 1px solid #d6dfd7; }
+.ebook-example dt { font-size: .92rem; }
+.ebook-example dd { margin: 0; font-weight: 700; color: #133631; }
+.ebook-example p { max-width: none; font-size: .9rem; color: #354458; }
+.ebook-faq { padding-bottom: 45px; }
+.ebook-faq h2 { margin: 0 0 14px; }
+.ebook-faq details { padding: 12px 0; border-bottom: 1px solid #d6dfd7; }
+.ebook-faq summary { cursor: pointer; font-weight: 700; color: #133631; }
+.ebook-faq p { max-width: 68ch; line-height: 1.6; }
+.ebook-source { font-size: .86rem; color: #354458; }

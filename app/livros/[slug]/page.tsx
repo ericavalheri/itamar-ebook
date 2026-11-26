@@ -12,10 +12,24 @@ import BookCover from "@/components/BookCover";
 
 const salesCopy: Record<string, {
   headline: string; intro: string; takeaways: string[];
+  searchTitle: string; searchDescription: string;
+  sampleRows: [string, string][]; sampleNote: string;
+  faq: [string, string][]; source: string; sourceLabel: string;
   scenario: string; steps: string[]; feature: string;
 }> = {
   "adicional-periculosidade": {
     headline: "Meu adicional veio certo?",
+    searchTitle: "Como conferir o adicional de periculosidade no holerite",
+    searchDescription: "Recebe adicional de periculosidade? Veja um holerite fictício, entenda o que conferir na base de cálculo e conheça o guia com simulador e horas extras.",
+    sampleRows: [["Salário-base do exemplo", "R$ 2.500,00"], ["Percentual usado neste exemplo", "30%"], ["Adicional de periculosidade", "R$ 750,00"]],
+    sampleNote: "Nesta situação fictícia, a base usada é R$ 2.500,00. Antes de comparar com o seu holerite, confira qual base a folha usou e se você está olhando o mesmo mês. O exemplo não determina quanto você tem direito a receber.",
+    faq: [
+      ["Como calcular o adicional de periculosidade?", "Na regra geral, aplica-se 30% sobre o salário-base. A sua situação pode ter particularidades. O guia ajuda a identificar o que você usou na simulação e o que a folha considerou."],
+      ["O adicional entra nas horas extras?", "Pela Súmula 132 do TST, o adicional pago em caráter permanente entra no cálculo das horas extras. O Volume 1 permite comparar cenários na calculadora e mostra onde olhar antes de concluir que há diferença."],
+      ["Trabalho com eletricidade e não recebo. Tenho direito?", "O cargo sozinho não responde. O enquadramento depende das atividades e condições de trabalho. O guia ajuda você a entender o que perguntar, mas não substitui a avaliação técnica ou jurídica do seu caso."],
+    ],
+    source: "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/perguntas-frequentes",
+    sourceLabel: "Perguntas frequentes do Ministério do Trabalho e Emprego",
     intro: "Se você trabalha em uma atividade de risco, já deve ter se perguntado se o adicional se aplica ao seu caso ou se o valor no holerite está certo. Este e-book ajuda você a sair do achismo, com exemplos, uma calculadora e um roteiro para conferir o que recebeu.",
     takeaways: ["Entenda o que vale conferir no seu trabalho", "Simule o adicional e as horas extras", "Compare seu holerite com um exemplo comentado"],
     scenario: "O adicional apareceu no holerite, mas você não sabe de onde saiu aquele valor. Por onde começar?",
@@ -24,6 +38,17 @@ const salesCopy: Record<string, {
   },
   "adicional-insalubridade": {
     headline: "Por que meu adicional veio nesse grau?",
+    searchTitle: "Adicional de insalubridade: como conferir o grau e o holerite",
+    searchDescription: "Seu holerite mostra adicional de insalubridade? Entenda o que conferir sobre o grau, a base de cálculo e o valor lançado, com um exemplo comentado.",
+    sampleRows: [["Rubrica fictícia", "Adic. insalubridade"], ["Grau informado no exemplo", "Médio (20%)"], ["Informação que falta para conferir o valor", "Base de cálculo"]],
+    sampleNote: "Ver 20% não basta para descobrir o valor esperado. São duas perguntas diferentes: qual grau foi reconhecido e sobre qual base o percentual foi aplicado?",
+    faq: [
+      ["Como saber se o grau é mínimo, médio ou máximo?", "O holerite mostra o que foi lançado. O enquadramento depende das condições reais de exposição e da avaliação técnica segundo a NR-15. O guia ajuda a separar essas duas informações."],
+      ["Como conferir o cálculo do adicional de insalubridade?", "Separe a rubrica do holerite, o percentual aplicado e a base usada na folha. Se ela não estiver clara, peça ao departamento pessoal que indique qual base foi utilizada e por quê."],
+      ["Se meu colega recebe mais, meu adicional está errado?", "Não dá para concluir só comparando dois contracheques. Comece verificando se a exposição, o grau reconhecido e a base usada são comparáveis."],
+    ],
+    source: "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadoras/normas-regulamentadoras-vigentes/norma-regulamentadora-no-15-nr-15",
+    sourceLabel: "NR-15 no Ministério do Trabalho e Emprego",
     intro: "Quem trabalha exposto a agentes nocivos nem sempre entende o que foi considerado na hora de definir o adicional. Este volume foi pensado para ajudar você a entender os critérios, distinguir os graus e saber o que olhar no contracheque.",
     takeaways: ["Entenda por que a exposição no trabalho importa", "Veja o que distingue os graus mínimo, médio e máximo", "Saiba onde olhar no holerite e o que perguntar"],
     scenario: "Você e um colega fazem tarefas parecidas, mas o adicional não é igual. O que vale conferir antes de tirar uma conclusão?",
@@ -33,9 +58,11 @@ const salesCopy: Record<string, {
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const product = getCatalogProductBySlug((await params).slug);
+  const { slug } = await params;
+  const product = getCatalogProductBySlug(slug);
+  const copy = salesCopy[slug];
   return product
-    ? { title: `${product.titulo} | Honestamente Itamar`, description: product.descricaoCurta }
+    ? { title: `${copy?.searchTitle ?? product.titulo} | Honestamente Itamar`, description: copy?.searchDescription ?? product.descricaoCurta }
     : { title: "E-book não encontrado | Honestamente Itamar" };
 }
 
@@ -74,7 +101,7 @@ export default async function LivroPage({
                   Quero conferir meu adicional · {formatMoney(product.precoCentavos)}
                 </Link>
               ) : (
-                <a className="btn btn-primary" href="#na-pratica">Ver como o guia ajuda</a>
+                <a className="btn btn-primary" href={copy ? "#na-pratica" : "#recursos"}>{copy ? "Ver exemplo de holerite" : "Conhecer o conteúdo"}</a>
               )}
               <span style={{ fontSize: "0.86rem", color: "var(--muted)" }}>
                 {canBuy ? "Acesso liberado após confirmação do pagamento via Pix" : `Vendas em breve · ${formatMoney(product.precoCentavos)}`}
@@ -104,15 +131,22 @@ export default async function LivroPage({
           <span className="label">Uma situação do dia a dia</span>
           <h2 id="na-pratica-titulo">{copy.scenario}</h2>
           <p>{copy.feature}</p>
+          <ol style={{ marginTop: 16 }}>
+            {copy.steps.map((step, index) => (
+              <li key={step}><span aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>{step}</li>
+            ))}
+          </ol>
         </div>
-        <ol>
-          {copy.steps.map((step, index) => (
-            <li key={step}><span aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>{step}</li>
-          ))}
-        </ol>
+        <div className="ebook-example">
+          <h3>Holerite fictício, linha por linha</h3>
+          <dl>{copy.sampleRows.map(([label, value]) => (
+            <div key={label}><dt>{label}</dt><dd>{value}</dd></div>
+          ))}</dl>
+          <p>{copy.sampleNote}</p>
+        </div>
       </section>}
 
-      <section className="container" style={{ padding: "48px 20px 56px" }}>
+      <section id="recursos" className="container" style={{ padding: "48px 20px 56px" }}>
         <h2 className="font-display" style={{ fontSize: "1.5rem", marginBottom: 24, color: "var(--navy)" }}>
           O que você vai encontrar neste volume
         </h2>
@@ -137,6 +171,17 @@ export default async function LivroPage({
           })}
         </div>
       </section>
+
+      {copy && <section className="container ebook-faq" aria-labelledby="ebook-faq-title">
+        <h2 id="ebook-faq-title" className="font-display">Dúvidas de quem está conferindo o holerite</h2>
+        {copy.faq.map(([question, answer]) => (
+          <details key={question}>
+            <summary>{question}</summary>
+            <p>{answer}</p>
+          </details>
+        ))}
+        <p className="ebook-source">Referência para consulta: <a href={copy.source}>{copy.sourceLabel}</a>{slug === "adicional-periculosidade" && <> · <a href="https://www.tst.jus.br/documents/10157/63003/Livro-Internet.pdf">Súmula 132 do TST</a></>}.</p>
+      </section>}
 
       {canBuy && <section id="comprar" aria-labelledby="comprar-titulo" className="container" style={{ padding: "0 20px 64px", scrollMarginTop: 92 }}>
         <div className="card" style={{ padding: 28, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
