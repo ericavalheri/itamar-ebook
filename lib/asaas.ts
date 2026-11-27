@@ -124,7 +124,9 @@ export interface AsaasPixQrCode {
 }
 
 export async function getPixQrCode(paymentId: string): Promise<AsaasPixQrCode> {
-  return asaasFetch<AsaasPixQrCode>(`/payments/${paymentId}/pixQrCode`);
+  return asaasFetch<AsaasPixQrCode>(`/payments/${encodeURIComponent(paymentId)}/pixQrCode`, {
+    method: "GET", redirect: "error", signal: AbortSignal.timeout(5000),
+  });
 }
 
 export async function getPayment(paymentId: string): Promise<AsaasPayment> {
