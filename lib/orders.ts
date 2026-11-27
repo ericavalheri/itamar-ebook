@@ -15,9 +15,9 @@ export interface NewOrderInput {
   valorCentavos: number;
   asaasCustomerId: string;
   asaasPaymentId: string;
-  pixQrBase64: string;
-  pixCopiaCola: string;
-  pixExpiracao: string;
+  pixQrBase64: string | null;
+  pixCopiaCola: string | null;
+  pixExpiracao: string | null;
 }
 
 export function createOrder(input: NewOrderInput): Order {
@@ -50,6 +50,19 @@ export function createOrder(input: NewOrderInput): Order {
     createdAt: now,
   });
   return getOrderById(id)!;
+}
+
+export function storeOrderPixQr(id: string, paymentId: string, qr: {
+  encodedImage: string;
+  payload: string;
+  expirationDate: string;
+}): Order | undefined {
+  db.prepare(
+    `UPDATE orders SET pix_qr_base64 = ?, pix_copia_cola = ?, pix_expiracao = ?
+     WHERE id = ? AND asaas_payment_id = ?
+       AND status = 'aguardando_pagamento' AND pix_qr_base64 IS NULL`
+  ).run(qr.encodedImage, qr.payload, qr.expirationDate, id, paymentId);
+  return getOrderById(id);
 }
 
 export interface NewManualOrderInput {
