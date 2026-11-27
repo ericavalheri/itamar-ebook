@@ -4,8 +4,9 @@ import { pixCheckoutEnabled, PREVIEW_MESSAGE } from "@/lib/sales";
 import { CouponError, reserveCoupon, reserveOwnerPilotCoupon, releaseCouponReservation } from "@/lib/coupons";
 import { claimPixRequest, pixRequestPattern, releaseUnusedPixRequest } from "@/lib/pix-request";
 import { NextRequest, NextResponse } from "next/server";
-import { createOrder, getOrderById } from "@/lib/orders";
+import { createOrder, getOrderById, storeOrderPixQr } from "@/lib/orders";
 import { getCheckoutProduct } from "@/lib/checkout-catalog";
+import { parsePixReceipt } from "@/lib/pix-receipt";
 import { isValidCPF, onlyDigits } from "@/lib/cpf";
 import { findOrCreateCustomer, createPixCharge, getPixQrCode, AsaasError } from "@/lib/asaas";
 
@@ -72,12 +73,33 @@ export async function POST(req: NextRequest) {
     id:order.id, amountCentavos:order.valor_centavos, status:order.status,
     pix:{qrBase64:order.pix_qr_base64,copyPaste:order.pix_copia_cola,expiresAt:order.pix_expiracao},
   }, {headers:{"Cache-Control":"private, no-store"}});
+  const qrPending = () => NextResponse.json({
+    error: "A cobrança foi registrada. O QR Code ainda não está disponível. Use “Recuperar este Pix” nesta mesma página, sem gerar outro pedido.",
+    mayHaveCreatedOrder: true,
+  }, {status: 503, headers: {"Cache-Control": "private, no-store"}});
+  const completePix = async (order: NonNullable<ReturnType<typeof getOrderById>>) => {
+    if (order.status !== "aguardando_pagamento") return replyOrder(order);
+    if (order.pix_qr_base64 && order.pix_copia_cola) return replyOrder(order);
+    if (!order.asaas_payment_id) return qrPending();
+    try {
+      const qr = await getPixQrCode(order.asaas_payment_id);
+      if (!qr || typeof qr.expirationDate !== "string" || !qr.expirationDate || !parsePixReceipt({
+        id: order.id, amountCentavos: order.valor_centavos,
+        pix: {qrBase64: qr.encodedImage, copyPaste: qr.payload},
+      })) return qrPending();
+      const updated = storeOrderPixQr(order.id, order.asaas_payment_id, qr);
+      return updated ? replyOrder(updated) : qrPending();
+    } catch (error) {
+      console.error("QR Pix indisponível após registrar o pedido.", error instanceof AsaasError ? error.status : "internal");
+      return qrPending();
+    }
+  };
   let claim: ReturnType<typeof claimPixRequest>;
   try { claim=claimPixRequest(id,[pilot ? "owner-pilot" : "public", produto as string,nomeTrim,emailTrim,telefoneTrim,estado.trim().toUpperCase(),cpfDigits,normalizedCoupon??""]); }
   catch { return NextResponse.json({error:"Não foi possível preparar o Pix."},{status:503}); }
   if (claim !== "new") {
     const previous = claim === "existing" ? getOrderById(id) : undefined;
-    if (previous?.pix_qr_base64 && previous.pix_copia_cola && (!pilot || previous.valor_centavos === PILOT_CENTAVOS)) return replyOrder(previous);
+    if (previous && (!pilot || previous.valor_centavos === PILOT_CENTAVOS)) return completePix(previous);
     return NextResponse.json({
       error: claim==="different" ? "Este navegador já tem um pedido com outros dados. Confira o cadastro anterior." :
         "Ainda não deu para recuperar este Pix. Não gere outro pedido; confira novamente em instantes.",
@@ -109,8 +131,6 @@ export async function POST(req: NextRequest) {
       externalReference: id,
     });
 
-    const qrCode = await getPixQrCode(payment.id);
-
     const order = createOrder({
       id,
       produto: product.slug,
@@ -122,12 +142,12 @@ export async function POST(req: NextRequest) {
       valorCentavos: reservation.amountCentavos,
       asaasCustomerId: customer.id,
       asaasPaymentId: payment.id,
-      pixQrBase64: qrCode.encodedImage,
-      pixCopiaCola: qrCode.payload,
-      pixExpiracao: qrCode.expirationDate,
+      pixQrBase64: null,
+      pixCopiaCola: null,
+      pixExpiracao: null,
     });
 
-    return replyOrder(order);
+    return completePix(order);
   } catch (err) {
     if (!paymentAttempted) {
       try {
