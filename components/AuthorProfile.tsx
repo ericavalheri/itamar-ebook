@@ -9,9 +9,9 @@ export default function AuthorProfile({ variant }: { variant: "footer" | "book" 
         <h2 id={headingId}>Itamar Revoredo Kunert</h2>
         <p>Administrador e autor da coleção Honestamente Itamar.</p>
         {variant === "book" && <>
-          <p>Itamar atua na representação profissional de administradores e tem trajetória ligada à ADESAN, à FEBRAD e ao SINASA. Também idealizou um curso de perícia judicial para administradores, promovido pela FEBRAD e pelo SINASA.</p>
+          <p>Itamar atua na representação e na valorização profissional de administradores e tecnólogos, com trajetória na FEBRAD e no SINASA. Idealizou um curso de perícia judicial para administradores, promovido pelas duas entidades.</p>
           <p>A proposta da coleção é aproximar as regras trabalhistas de situações concretas: abrir o holerite, entender o que foi lançado e saber quais perguntas fazer quando a conta não estiver clara.</p>
-          <p><a href="https://www.adesan.org.br/nossa-historia/">Conheça sua atuação na ADESAN</a> · <a href="https://csb.org.br/noticias/curso-de-pericia-judicial-para-administradores-amplia-o-campo-de-atuacao-da-categoria">Veja uma iniciativa de formação</a></p>
+          <p><a href="https://csb.org.br/noticias/curso-de-pericia-judicial-para-administradores-amplia-o-campo-de-atuacao-da-categoria">Conheça a iniciativa de formação da FEBRAD e do SINASA</a></p>
         </>}
       </div>
     </section>
