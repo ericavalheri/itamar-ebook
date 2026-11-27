@@ -4,10 +4,10 @@ import { db } from "./db";
 const CODE_PATTERN = /^[A-Z0-9][A-Z0-9_-]{2,31}$/;
 const MIN_PAYABLE = 500;
 export const PILOT_LIST_CENTAVOS = 3800;
-export const PILOT_PERCENT = 73;
+export const PILOT_PERCENT = 67;
 export const PILOT_CENTAVOS = PILOT_LIST_CENTAVOS - Math.floor((PILOT_LIST_CENTAVOS * PILOT_PERCENT + 50) / 100);
-export const PILOT_CODE_PATTERN = /^PILOT73_[A-Z0-9]{8,20}$/;
-const isReservedPilotCode = (code: string) => /^(?:PILOT86_|PILOT73_)/.test(code);
+export const PILOT_CODE_PATTERN = /^PILOT67_[A-Z0-9]{8,20}$/;
+const isReservedPilotCode = (code: string) => /^(?:PILOT86_|PILOT73_|PILOT67_)/.test(code);
 const UNAVAILABLE = "Cupom inválido, vencido ou sem usos disponíveis.";
 export class CouponError extends Error {
   constructor(message = UNAVAILABLE) { super(message); this.name = "CouponError"; }
