@@ -6,7 +6,10 @@ import { notifyOrderApproved } from "@/lib/purchase-notify";
 export const runtime = "nodejs";
 
 const relevant = new Set(["PAYMENT_CONFIRMED","PAYMENT_RECEIVED","PAYMENT_OVERDUE","PAYMENT_DELETED","PAYMENT_REFUNDED","PAYMENT_PARTIALLY_REFUNDED","PAYMENT_REFUND_IN_PROGRESS","PAYMENT_REFUND_DENIED","PAYMENT_CHARGEBACK_REQUESTED","PAYMENT_CHARGEBACK_DISPUTE","PAYMENT_AWAITING_CHARGEBACK_REVERSAL"]);
-const reply = (body:object,status=200) => NextResponse.json(body,{status,headers:{"Cache-Control":"private, no-store"}});
+// Legacy Asaas webhooks (v2) require a literal SUCCESS body for accepted deliveries.
+const reply = (body:object,status=200) => status===200
+  ? new Response("SUCCESS",{status:200,headers:{"Content-Type":"text/plain; charset=utf-8","Cache-Control":"private, no-store"}})
+  : NextResponse.json(body,{status,headers:{"Cache-Control":"private, no-store"}});
 const digest=(s:string)=>createHash("sha256").update(s).digest();
 const lastAuthWarning: Record<string, number> = Object.create(null);
 
