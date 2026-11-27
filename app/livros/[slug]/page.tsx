@@ -83,8 +83,20 @@ export default async function LivroPage({
   const copy = salesCopy[slug];
 
   return (
-    <main>
-      <section style={{ background: "var(--sand)" }}>
+    <div className="ebook-site">
+    <a className="skip-link" href="#conteudo-ebook">Ir para o conteúdo</a>
+    <header className="ebook-nav">
+      <div className="container ebook-nav-inner">
+        <Link href="/" className="font-display ebook-nav-brand" aria-label="Honestamente, Itamar, início">Honestamente, <strong>Itamar.</strong></Link>
+        <nav aria-label="Navegação dos e-books">
+          <Link href="/">Início</Link>
+          <Link href="/#biblioteca">Biblioteca</Link>
+          <Link href="/acessar">Acesso do leitor</Link>
+        </nav>
+      </div>
+    </header>
+    <main id="conteudo-ebook">
+      <section className="ebook-hero">
         <div className="container livro-hero" style={{ padding: "48px 20px 56px" }}>
           <div>
             <span className="label">{product.serie}</span>
@@ -120,7 +132,7 @@ export default async function LivroPage({
                 position: "absolute",
                 inset: "-10%",
                 borderRadius: "50%",
-                background: "radial-gradient(circle, rgba(12,102,97,0.14), transparent 70%)",
+                background: "radial-gradient(circle, rgba(27,43,67,0.16), transparent 70%)",
                 zIndex: 0,
               }}
             />
@@ -234,10 +246,12 @@ export default async function LivroPage({
 
       <div className="container author-book-shell"><AuthorProfile variant="book" /></div>
 
+    </main>
       <footer className="ebook-footer">
         <div className="container ebook-footer-inner">
           <div><strong>Honestamente, Itamar.</strong><p>Guias digitais para entender o que aparece no seu holerite.</p></div>
           <nav aria-label="Links do rodapé">
+            <Link href="/">Início</Link>
             <Link href="/#biblioteca">Biblioteca</Link>
             <Link href="/acessar">Acesso do leitor</Link>
             <a href="#investimento">O que está incluído</a>
@@ -245,6 +259,6 @@ export default async function LivroPage({
           </nav>
         </div>
       </footer>
-    </main>
+    </div>
   );
 }
