@@ -579,3 +579,27 @@ th {
 .ebook-footer p { margin:6px 0 0; font-size:.9rem; }
 .ebook-footer nav { display:flex; flex-wrap:wrap; align-items:center; gap:10px 18px; font-size:.9rem; }
 @media(max-width:700px) { .ebook-value { grid-template-columns:1fr; } }
+
+
+/* Biblioteca: paleta azul da marca nas páginas de oferta, sem alterar leitor, capa ou administração. */
+.ebook-site { --petrol:var(--navy-soft); --sand:#eef2f7; --muted:#47566b; color:var(--navy); background:#faf8f3; min-height:100svh; }
+.ebook-nav { background:#faf8f3; border-bottom:1px solid #d7e0eb; }
+.ebook-nav-inner { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px 24px; min-height:72px; padding-block:12px; }
+.ebook-nav-brand { text-decoration:none; line-height:1.2; font-size:clamp(18px,2.5vw,24px); }
+.ebook-nav-inner nav { display:flex; flex-wrap:wrap; gap:4px 18px; font-size:.875rem; font-weight:650; }
+.ebook-nav-inner nav a { display:inline-flex; min-height:44px; align-items:center; text-underline-offset:.22em; text-decoration-color:transparent; }
+.ebook-nav-inner nav a:hover { text-decoration-color:currentColor; }
+.ebook-hero { background:linear-gradient(125deg,#edf2f8,#faf8f3); }
+.ebook-site .btn-primary { background:var(--navy-soft); color:#fff; }
+.ebook-site .btn-primary:hover { background:#29476c; color:#fff; }
+.ebook-site .label { color:#28466b; border-color:#aebfd3; }
+.ebook-site .icon-badge { background:#e0e8f2; color:#28466b; }
+.ebook-site .ebook-sales-product,.ebook-site .ebook-sales-benefits,.ebook-site .ebook-sales-benefits li::marker,.ebook-site .ebook-soft-link,.ebook-site .ebook-example h3,.ebook-site .ebook-example dd,.ebook-site .ebook-faq summary { color:#28466b; }
+.ebook-site .ebook-sales-preview ol,.ebook-site .ebook-value,.ebook-site .ebook-footer { background:var(--navy); color:#fffaf1; }
+.ebook-site .ebook-value .label { color:var(--navy); background:#edf2f8; }
+.ebook-site .ebook-value .btn-primary { background:#dce8fa; color:var(--navy); border-color:#dce8fa; }
+.ebook-site .ebook-value .btn-primary:hover { background:#fff; color:var(--navy); }
+.ebook-site .ebook-example,.ebook-site .ebook-example dl>div,.ebook-site .ebook-faq details { border-color:#d7e0eb; }
+.ebook-site .ebook-example { background:#fbfcfe; }
+.ebook-site .ebook-hero .livro-hero-cover { min-width:0; }
+@media(max-width:540px){.ebook-nav-inner{align-items:flex-start;gap:2px 12px;padding-block:13px 6px}.ebook-nav-inner nav{width:100%;gap:2px 16px}.ebook-nav-inner nav a{font-size:.82rem}}
