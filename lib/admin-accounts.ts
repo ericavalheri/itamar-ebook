@@ -50,13 +50,14 @@ export async function listAdminOrders() {
   if (!admin) return [];
   const owner = admin.role === "owner";
   return db.prepare(`SELECT id,${owner ? "nome,email,telefone,active_session_id IS NOT NULL" : "'' AS nome,'' AS email,'' AS telefone,0"} AS has_active_session,
+                    ${owner ? 'coalesce(length(asaas_payment_id),0)>0' : '0'} AS has_asaas_payment,
                     created_at,produto,estado,valor_centavos,status,pago_at
                     FROM orders ORDER BY created_at DESC`).all().map((value) => {
-    const row = value as Omit<AdminOrder, "has_active_session"> & { has_active_session: number };
-    return {...row, has_active_session:Boolean(row.has_active_session)};
+    const row = value as Omit<AdminOrder, "has_active_session" | "has_asaas_payment"> & { has_active_session: number; has_asaas_payment: number };
+    return {...row, has_active_session:Boolean(row.has_active_session), has_asaas_payment:Boolean(row.has_asaas_payment)};
   });
 }
-type AdminOrder = Pick<import("./db").Order, "id" | "nome" | "email" | "telefone" | "created_at" | "produto" | "estado" | "valor_centavos" | "status" | "pago_at"> & {has_active_session:boolean};
+type AdminOrder = Pick<import("./db").Order, "id" | "nome" | "email" | "telefone" | "created_at" | "produto" | "estado" | "valor_centavos" | "status" | "pago_at"> & {has_active_session:boolean; has_asaas_payment:boolean};
 
 export async function listAdminTeam() {
   const admin = await adminIdentity();

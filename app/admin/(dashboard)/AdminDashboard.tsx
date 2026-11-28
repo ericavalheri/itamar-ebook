@@ -71,7 +71,7 @@ export default function AdminDashboard({tab,identity,orders,team,filter,page}:{t
                 <tbody>{visible.map(o=><tr key={o.id}><td><span title={o.id}>#{o.id.slice(0,8)}</span><small>{Number.isFinite(Date.parse(o.created_at))?dt.format(new Date(o.created_at)):"Data indisponível"}</small></td>
                   {owner&&<td>{o.nome||"Nome não informado"}{o.email&&<small>{o.email}</small>}</td>}<td>{productName(o.produto)}</td><td>{formatMoney(o.valor_centavos)}</td><td><span className={`${s.badge} ${kind(o.status)}`}>{STATUS_LABEL[o.status] ?? "Desconhecido"}</span></td>
                   <td>{o.has_active_session?"Sessão ativa":o.status==="aprovado"?"Acesso liberado":"Acesso indisponível"}</td>
-                  {owner&&<td><AdminOrderActions id={o.id} status={o.status} session={o.has_active_session}/></td>}</tr>)}</tbody></table>
+                  {owner&&<td><AdminOrderActions id={o.id} status={o.status} session={o.has_active_session} asaasPayment={o.has_asaas_payment}/></td>}</tr>)}</tbody></table>
               </div> : <Empty title={activeFilter?"Nenhum pedido neste filtro":"Nenhum pedido cadastrado"} body={activeFilter?"Escolha outro status para ampliar a busca.":"As compras aparecerão aqui assim que forem registradas."}/>}
             {last>1&&<nav className={s.filters} aria-label="Paginação dos pedidos">{cur>1&&<Link href={href("orders",activeFilter,cur-1)} prefetch={false}>Anterior</Link>}<span>Página {cur} de {last}</span>{cur<last&&<Link href={href("orders",activeFilter,cur+1)} prefetch={false}>Próxima</Link>}</nav>}
           </section>
